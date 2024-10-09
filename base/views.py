@@ -6,3 +6,6 @@ def lobby(request):
 
 def room(request):
     return render(request, 'base/room.html')
+
+def login(request):
+    return render(request, 'base/login.html')
