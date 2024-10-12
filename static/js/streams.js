@@ -14,6 +14,7 @@ let remoteUsers = {}
 let joinAndDisplayLocalStream = async () => {
     // Listen for when a remote user publishes their media (video/audio).
     client.on('user-published', handleUserJoined)
+    client.on('user-left', handleUserLeft)
 
     // Join the Agora channel using the app ID, channel name, and token. UID (User ID) is generated.
     UID = await client.join(APP_ID, CHANNEL, TOKEN, null)
@@ -70,5 +71,42 @@ let handleUserJoined = async (user, mediaType) => {
     }
 }
 
+let handleUserLeft = async (user) => {
+    delete remoteUsers[user.uid]
+    document.getElementById(`user-container-${user.uid}`).remove()
+
+let leaveAndRemoveLocalStream = async () => {
+    for (let i=0; localTracks.length > i; i++){
+        localTracks[i].stop()
+        localTracks[i].close()
+    }
+
+    await client.leave()
+    window.open('/', '_self')
+}
+
+let toggleCamera = async (e) => {
+    if(localTracks[1].muted){
+        await localTracks[1].setMuted(false)
+        e.target.style.backgroundColor = '#fff'
+    }else{
+        await localTracks[1].setMuted(true)
+        e.target.style.backgroundColor = 'rgb(255, 80, 80, 1)'
+    }
+}
+
+let toggleMic = async (e) => {
+    if(localTracks[0].muted){
+        await localTracks[0].setMuted(false)
+        e.target.style.backgroundColor = '#fff'
+    }else{
+        await localTracks[0].setMuted(true)
+        e.target.style.backgroundColor = 'rgb(255, 80, 80, 1)'
+    }
+}
 // Call the function to join the channel and display the local stream.
 joinAndDisplayLocalStream()
+
+document.getElementById('leave-btn').addEventListener('click', leaveAndRemoveLocalStream)
+document.getElementById('camera-btn').addEventListener('click', toggleCamera)
+document.getElementById('mic-btn').addEventListener('click', toggleMic)
