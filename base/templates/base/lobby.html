@@ -12,7 +12,7 @@
             <p>A group video calling application just for you</p>
         </div>
 
-        <form id="form">
+        <form id="form" action="/room">
             <div class="form-field">
                 <input type="submit" value="Join Stream" />
             </div>
@@ -26,7 +26,6 @@
 
     let handleSubmit = async (e) => {
         e.preventDefault()
-        window.open('/room/', '_self')
     }
 
     form.addEventListener('submit', handleSubmit)
