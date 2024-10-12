@@ -1,27 +1,27 @@
 :root {
-    --shadow:0 4px 6px -1px rgba(0,0,0,0.1),0 2px 4px -1px rgba(0,0,0,0.06);
+    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
 body {
-    background-color: rgba(232,233,239,1);    
+    background-color: rgba(232, 233, 239, 1);
 }
 
 #logo {
-    display:block;
+    display: block;
     width: 100px;
     margin: 0 auto;
 }
 
 #form-container {
-    width:400px;
-    box-shadow:var(--shadow);
+    width: 400px;
+    box-shadow: var(--shadow);
     background-color: #fff;
-    padding:30px;
+    padding: 30px;
     border-radius: 5px;
-    position:fixed ;
-    top:50%;
-    left:50%;
-    transform: translate(-50%,-50%);
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
 }
 
 /*------Room styling------*/
@@ -36,12 +36,12 @@ body {
 .video-container {
     flex-basis: 500px;
     flex-grow: 1;
-    max-height:100% ;
+    max-height: 100%;
     min-height: 350px;
-    border:1px solid rgb(75,95,172,1);
+    border: 1px solid rgb(75, 95, 172, 1);
     border-radius: 5px;
     margin: 2px;
-    background-color: rgba(198,202,219,1);
+    background-color: rgba(198, 202, 219, 1);
 }
 
 .video-player {
@@ -52,15 +52,16 @@ body {
 
 /* ----------------- Room Styling | Controls ------------------*/
 
-#controls-wrapper{
+#controls-wrapper {
     display: flex;
     width: 100%;
     justify-content: center;
     column-gap: 1em;
     position: fixed;
     bottom: 20px;
-    
-.control-icon{
+}
+
+.control-icon {
     height: 20px;
     width: 20px;
     box-shadow: var(--shaddow);
@@ -70,7 +71,7 @@ body {
     border-radius: 5px;
 }
 
-#leave-btn{
+#leave-btn {
     background-color: rgb(255, 80, 80, 1);
 
 }

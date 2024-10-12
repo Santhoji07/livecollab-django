@@ -74,9 +74,10 @@ let handleUserJoined = async (user, mediaType) => {
 let handleUserLeft = async (user) => {
     delete remoteUsers[user.uid]
     document.getElementById(`user-container-${user.uid}`).remove()
+}
 
 let leaveAndRemoveLocalStream = async () => {
-    for (let i=0; localTracks.length > i; i++){
+    for (let i = 0; localTracks.length > i; i++) {
         localTracks[i].stop()
         localTracks[i].close()
     }
@@ -86,20 +87,20 @@ let leaveAndRemoveLocalStream = async () => {
 }
 
 let toggleCamera = async (e) => {
-    if(localTracks[1].muted){
+    if (localTracks[1].muted) {
         await localTracks[1].setMuted(false)
         e.target.style.backgroundColor = '#fff'
-    }else{
+    } else {
         await localTracks[1].setMuted(true)
         e.target.style.backgroundColor = 'rgb(255, 80, 80, 1)'
     }
 }
 
 let toggleMic = async (e) => {
-    if(localTracks[0].muted){
+    if (localTracks[0].muted) {
         await localTracks[0].setMuted(false)
         e.target.style.backgroundColor = '#fff'
-    }else{
+    } else {
         await localTracks[0].setMuted(true)
         e.target.style.backgroundColor = 'rgb(255, 80, 80, 1)'
     }
