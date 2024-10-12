@@ -12,6 +12,7 @@ let remoteUsers = {}
 
 // Async function to join the channel and display the local video stream.
 let joinAndDisplayLocalStream = async () => {
+    // Listen for when a remote user publishes their media (video/audio).
     client.on('user-published', handleUserJoined)
 
     // Join the Agora channel using the app ID, channel name, and token. UID (User ID) is generated.
@@ -36,27 +37,35 @@ let joinAndDisplayLocalStream = async () => {
     await client.publish([localTracks[0], localTracks[1]])
 }
 
+// Function to handle when a remote user joins and publishes media (video/audio).
 let handleUserJoined = async (user, mediaType) => {
+    // Add the remote user to the 'remoteUsers' object.
     remoteUsers[user.uid] = user
+    // Subscribe to the remote user's media (either video or audio).
     await client.subscribe(user, mediaType)
 
+    // If the media type is video, display the remote user's video stream.
     if (mediaType === 'video') {
+        // Remove the video container if it already exists to avoid duplicates.
         let player = document.getElementById(`user-container-${user.uid}`)
         if (player != null) {
             player.remove()
         }
 
+        // Create and add a new HTML structure for the remote user's video stream.
         player = `<div class="video-container" id="user-container-${user.uid}">
                     <div class="username-wrapper"><span class="user-name">My name</span></div>
                     <div class="video-player" id="user-${user.uid}"></div>
                 </div>`
 
         document.getElementById('video-streams').insertAdjacentHTML('beforeend', player)
-    
+
+        // Play the remote user's video track in the newly created 'video-player' element.
         user.videoTrack.play(`user-${user.uid}`)
     }
 
-    if(mediaType==='audio') {
+    // If the media type is audio, play the remote user's audio track.
+    if (mediaType === 'audio') {
         user.audioTrack.play()
     }
 }
