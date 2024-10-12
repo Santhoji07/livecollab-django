@@ -12,7 +12,12 @@
             <p>A group video calling application just for you</p>
         </div>
 
-        <form id="form" action="/room">
+        <form id="form">
+            <div class="form-field">
+                <input type="text" name="room" placeholder="Enter a room name" style="text-transform: uppercase;"
+                    required />
+            </div>
+
             <div class="form-field">
                 <input type="submit" value="Join Stream" />
             </div>
@@ -21,13 +26,44 @@
 
 </main>
 
-<script src="text/javascript">
+<script type="text/javascript">
+
+    // Get the form element from the DOM using its ID.
     let form = document.getElementById('form')
 
+    // Define an async function to handle form submission.
     let handleSubmit = async (e) => {
+        // Prevent the default form submission behavior (i.e., page reload).
         e.preventDefault()
+
+        // Get the value entered in the 'room' input field, convert it to uppercase.
+        let room = e.target.room.value.toUpperCase()
+
+        // Send a GET request to the `/get_token/` endpoint with the room name as a query parameter.
+        let response = await fetch(`/get_token/?channel=${room}`)
+
+        // Wait for the response and parse it as JSON.
+        let data = await response.json()
+
+        // Extract the UID and token from the response data.
+        let UID = data.uid
+        let token = data.token
+
+        // Store the UID, token, and room name in the session storage for later use.
+        // Use sessionStorage to temporarily store the UID, token, and room name during the session.
+        // This ensures the data is accessible across different pages (e.g., form page to room page),
+        // and is automatically cleared when the user closes the browser tab for added security.
+
+        sessionStorage.setItem('UID', UID)
+        sessionStorage.setItem('token', token)
+        sessionStorage.setItem('room', room)
+
+        // Redirect the user to the `/room/` page (where the video chat occurs).
+        window.open('/room/', '_self')
     }
 
+    // Add an event listener to the form for the 'submit' event, and call the `handleSubmit` function when the form is submitted.
     form.addEventListener('submit', handleSubmit)
+
 </script>
 {% endblock content %}
