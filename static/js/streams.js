@@ -5,6 +5,8 @@ const TOKEN = sessionStorage.getItem('token')
 // Get the UID (User ID) from the session storage and convert it to a number.
 let UID = Number(sessionStorage.getItem('UID'));
 
+let NAME =sessionStorage.getItem('name')
+
 // Create an Agora client instance for RTC (Real-Time Communication) using VP8 codec for video.
 const client = AgoraRTC.createClient({ mode: 'rtc', codec: 'vp8' })
 
@@ -34,9 +36,12 @@ let joinAndDisplayLocalStream = async () => {
     // Get local microphone and camera tracks.
     localTracks = await AgoraRTC.createMicrophoneAndCameraTracks()
 
+    let member = await createMember()
+    
+
     // Create an HTML element to display the local user's video stream and their name.
     let player = `<div class="video-container" id="user-container-${UID}">
-                    <div class="username-wrapper"><span class="user-name">My name</span></div>
+                    <div class="username-wrapper"><span class="user-name">${member.name}</span></div>
                     <div class="video-player" id="user-${UID}"></div>
                 </div>`
 
@@ -67,7 +72,7 @@ let handleUserJoined = async (user, mediaType) => {
 
         // Create a new HTML structure for the remote user's video stream.
         player = `<div class="video-container" id="user-container-${user.uid}">
-                    <div class="username-wrapper"><span class="user-name">My name</span></div>
+                    <div class="username-wrapper"><span class="user-name">my name</span></div>
                     <div class="video-player" id="user-${user.uid}"></div>
                 </div>`
 
@@ -131,6 +136,18 @@ let toggleMic = async (e) => {
         await localTracks[0].setMuted(true)
         e.target.style.backgroundColor = 'rgb(255, 80, 80, 1)'
     }
+}
+
+let createMember = async() => {
+    let response = await fetch('/create_member/',{
+        method:'POST',
+        headers:{
+            'Content-Type':'application/json'
+        },
+        body:JSON.stringify({'name':NAME, 'room_name':CHANNEL, 'UID':UID})
+        })
+        let member =await response.json()
+        return member
 }
 
 // Call the function to join the channel and display the local stream.

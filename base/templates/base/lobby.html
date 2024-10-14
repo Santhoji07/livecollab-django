@@ -3,67 +3,62 @@
 {% block content %}
 
 <main>
+
     <section id="form-container">
 
-        <img id="logo" src="{% static 'images/chat-icon.png' %}" alt="">
+        <img id="logo" src="{% static 'images/chat-icon.png' %}"/>
 
-        <div>
+        <div id="welcome-message">
             <h1>Welcome to MyChat</h1>
-            <p>A group video calling application just for you</p>
+            <p><b>A group video calling platform made just for you!</b></p>
         </div>
 
         <form id="form">
-            <div class="form-field">
-                <input type="text" name="room" placeholder="Enter a room name" style="text-transform: uppercase;"
-                    required />
-            </div>
+            <div class="field-wrapper">
 
-            <div class="form-field">
-                <input type="submit" value="Join Stream" />
+                <div class="form-field">
+                    <label>Room:</label>
+                    <input name="room" placeholder="Enter a room name..."  style="text-transform:uppercase"/>
+                </div>
+
+                <div class="form-field">
+                    <label>Name:</label>
+                    <input name="name" placeholder="Enter your name..."  style="text-transform:uppercase"/>
+                </div>
+
+                <div class="form-field">
+                    <input type="submit" value="Join Stream" />
+                </div>
             </div>
         </form>
     </section>
-
 </main>
 
-<script type="text/javascript">
-
-    // Get the form element from the DOM using its ID.
+<script>
     let form = document.getElementById('form')
 
-    // Define an async function to handle form submission.
     let handleSubmit = async (e) => {
-        // Prevent the default form submission behavior (i.e., page reload).
         e.preventDefault()
-
-        // Get the value entered in the 'room' input field, convert it to uppercase.
         let room = e.target.room.value.toUpperCase()
+        let name = e.target.name.value
 
-        // Send a GET request to the `/get_token/` endpoint with the room name as a query parameter.
         let response = await fetch(`/get_token/?channel=${room}`)
-
-        // Wait for the response and parse it as JSON.
         let data = await response.json()
 
-        // Extract the UID and token from the response data.
         let UID = data.uid
         let token = data.token
-
-        // Store the UID, token, and room name in the session storage for later use.
-        // Use sessionStorage to temporarily store the UID, token, and room name during the session.
-        // This ensures the data is accessible across different pages (e.g., form page to room page),
-        // and is automatically cleared when the user closes the browser tab for added security.
 
         sessionStorage.setItem('UID', UID)
         sessionStorage.setItem('token', token)
         sessionStorage.setItem('room', room)
+        sessionStorage.setItem('name', name)
 
-        // Redirect the user to the `/room/` page (where the video chat occurs).
         window.open('/room/', '_self')
     }
 
-    // Add an event listener to the form for the 'submit' event, and call the `handleSubmit` function when the form is submitted.
-    form.addEventListener('submit', handleSubmit)
 
+
+    form.addEventListener('submit', handleSubmit)
 </script>
+
 {% endblock content %}
