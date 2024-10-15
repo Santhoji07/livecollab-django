@@ -2,10 +2,12 @@ const APP_ID = '351d9881f5d3413ba18e08949844fddb'
 // Get the channel name and token from the session storage.
 const CHANNEL = sessionStorage.getItem('room')
 const TOKEN = sessionStorage.getItem('token')
-// Get the UID (User ID) from the session storage and convert it to a number.
-let UID = Number(sessionStorage.getItem('UID'));
 
-let NAME =sessionStorage.getItem('name')
+// Get the UID (User ID) from the session storage and convert it to a number.
+let UID = Number(sessionStorage.getItem('UID'))
+
+// Get the user's name from session storage.
+let NAME = sessionStorage.getItem('name')
 
 // Create an Agora client instance for RTC (Real-Time Communication) using VP8 codec for video.
 const client = AgoraRTC.createClient({ mode: 'rtc', codec: 'vp8' })
@@ -26,7 +28,7 @@ let joinAndDisplayLocalStream = async () => {
     try {
         // Join the Agora channel using the app ID, channel name, token, and UID.
         await client.join(APP_ID, CHANNEL, TOKEN, UID)
-    } 
+    }
     catch (error) {
         // If there's an error joining the channel, log it and redirect to the home page.
         console.error(error)
@@ -36,8 +38,8 @@ let joinAndDisplayLocalStream = async () => {
     // Get local microphone and camera tracks.
     localTracks = await AgoraRTC.createMicrophoneAndCameraTracks()
 
+    // Create a new member for the session by calling the server.
     let member = await createMember()
-    
 
     // Create an HTML element to display the local user's video stream and their name.
     let player = `<div class="video-container" id="user-container-${UID}">
@@ -59,6 +61,7 @@ let joinAndDisplayLocalStream = async () => {
 let handleUserJoined = async (user, mediaType) => {
     // Add the remote user to the 'remoteUsers' object for tracking.
     remoteUsers[user.uid] = user
+    
     // Subscribe to the remote user's media (either video or audio).
     await client.subscribe(user, mediaType)
 
@@ -70,9 +73,12 @@ let handleUserJoined = async (user, mediaType) => {
             player.remove()
         }
 
+        // Get the remote user's member information from the server.
+        let member = await getMember(user)
+
         // Create a new HTML structure for the remote user's video stream.
         player = `<div class="video-container" id="user-container-${user.uid}">
-                    <div class="username-wrapper"><span class="user-name">my name</span></div>
+                    <div class="username-wrapper"><span class="user-name">${member.name}</span></div>
                     <div class="video-player" id="user-${user.uid}"></div>
                 </div>`
 
@@ -108,6 +114,10 @@ let leaveAndRemoveLocalStream = async () => {
 
     // Leave the Agora channel.
     await client.leave()
+
+    // Delete the local user's member information from the server.
+    deleteMember()
+
     // Redirect to the home page after leaving.
     window.open('/', '_self')
 }
@@ -138,20 +148,46 @@ let toggleMic = async (e) => {
     }
 }
 
-let createMember = async() => {
-    let response = await fetch('/create_member/',{
-        method:'POST',
-        headers:{
-            'Content-Type':'application/json'
+// Function to create a new member by sending a POST request to the server.
+let createMember = async () => {
+    let response = await fetch('/create_member/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
         },
-        body:JSON.stringify({'name':NAME, 'room_name':CHANNEL, 'UID':UID})
-        })
-        let member =await response.json()
-        return member
+        body: JSON.stringify({ 'name': NAME, 'room_name': CHANNEL, 'UID': UID })
+    })
+
+    let member = await response.json()
+    return member
+}
+
+// Function to get a member's information based on their UID and room name.
+let getMember = async (user) => {
+    let response = await fetch(`/get_member/?UID=${user.uid}&room_name=${CHANNEL}`)
+    let member = await response.json()
+
+    return member
+}
+
+// Function to delete a member by sending a POST request to the server.
+let deleteMember = async () => {
+    let response = await fetch('/delete_member/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ 'name': NAME, 'room_name': CHANNEL, 'UID': UID })
+    })
+
+    let member = await response.json()
 }
 
 // Call the function to join the channel and display the local stream.
 joinAndDisplayLocalStream()
+
+// When the window is about to unload, call the deleteMember function to remove the user.
+window.addEventListener('beforeunload', deleteMember)
 
 // Add event listeners for the leave, camera, and microphone buttons.
 document.getElementById('leave-btn').addEventListener('click', leaveAndRemoveLocalStream)

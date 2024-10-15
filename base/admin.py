@@ -1,7 +1,5 @@
 from django.contrib import admin
-
-# Register your models here.
-
 from .models import RoomMember
 
+# Register your models here.
 admin.site.register(RoomMember)

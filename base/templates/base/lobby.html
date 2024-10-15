@@ -18,12 +18,12 @@
 
                 <div class="form-field">
                     <label>Room:</label>
-                    <input name="room" placeholder="Enter a room name..."  style="text-transform:uppercase"/>
+                    <input name="room" placeholder="Enter a room name"  style="text-transform:uppercase"/>
                 </div>
 
                 <div class="form-field">
                     <label>Name:</label>
-                    <input name="name" placeholder="Enter your name..."  style="text-transform:uppercase"/>
+                    <input name="username" placeholder="Enter your name"/>
                 </div>
 
                 <div class="form-field">
@@ -40,7 +40,7 @@
     let handleSubmit = async (e) => {
         e.preventDefault()
         let room = e.target.room.value.toUpperCase()
-        let name = e.target.name.value
+        let name = e.target.username.value
 
         let response = await fetch(`/get_token/?channel=${room}`)
         let data = await response.json()
@@ -55,8 +55,6 @@
 
         window.open('/room/', '_self')
     }
-
-
 
     form.addEventListener('submit', handleSubmit)
 </script>
