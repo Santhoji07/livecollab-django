@@ -3,7 +3,7 @@
 
 
 :root {
-    --shaddow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
 body {
@@ -11,8 +11,23 @@ body {
     font-family: 'Roboto', sans-serif;
 }
 
+/* ------------------  Login Page  -------------------*/
 
-/* ------------------  Register Page ------------------ */
+.forgot-password {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.forgot-password a {
+    text-decoration: none;
+}
+
+.forgot-password a:hover {
+    text-decoration: underline;
+}
+
+
+/* ------------------  Register Page  ------------------ */
 
 #form-container {
     width: 400px;
@@ -73,6 +88,9 @@ body {
     cursor: pointer;
 }
 
+.form-field input[type='submit']:hover {
+    background-color: rgb(68, 100, 238);
+}
 
 @media screen and (max-width:450px) {
     #form-container {
