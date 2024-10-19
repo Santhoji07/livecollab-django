@@ -7,7 +7,7 @@
     <section id="form-container">
 
         <div id="welcome-message">
-            <h1>Login</h1>
+            <h1>Sign In</h1>
         </div>
 
         <form id="form" method="POST">
@@ -15,7 +15,7 @@
             <div>
 
                 <div class="form-field">
-                    <label for="name">Username:</label>
+                    <label for="username">Username:</label>
                     {{ form.username }}
 
                     {% if form.username.errors %}
@@ -25,16 +25,16 @@
                         {% endfor %}
                     </div>
                     {% endif %}
-                    
+
                 </div>
 
                 <div class="form-field">
-                    <label for="password">Password:</label>
-                    {{ form.password }}
+                    <label for="password1">Password:</label>
+                    {{ form.password1 }}
 
-                    {% if form.password.errors %}
+                    {% if form.password1.errors %}
                     <div style="color: red; margin-top: 5px;">
-                        {% for error in form.password.errors %}
+                        {% for error in form.password1.errors %}
                         {{ error }}<br>
                         {% endfor %}
                     </div>
@@ -43,11 +43,25 @@
                 </div>
 
                 <div class="form-field">
-                    <input type="submit" value="Login" />
+                    <label for="password2">Confirm Password:</label>
+                    {{ form.password2 }}
+
+                    {% if form.password2.errors %}
+                    <div style="color: red; margin-top: 5px;">
+                        {% for error in form.password2.errors %}
+                        {{ error }}<br>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                </div>
+
+                <div class="form-field">
+                    <input type="submit" value="Sign Up" />
                 </div>
 
                 {% if form.non_field_errors %}
-                <div style="color: red;">
+                <div style="color: red; margin-top: 5px;">
                     {% for error in form.non_field_errors %}
                     {{ error }}<br>
                     {% endfor %}
@@ -57,7 +71,7 @@
             </div>
         </form>
 
-        <p style="text-align: center;">Don't have an account? <a href="{% url 'signin' %}" style="text-decoration: none;">Sign In</a></p>
+        <p style="text-align: center;">Already have an account? <a href="{% url 'login' %}" style="text-decoration: none;">Login</a></p>
     </section>
 </main>
 

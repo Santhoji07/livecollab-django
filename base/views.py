@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from agora_token_builder import RtcTokenBuilder
 import random
@@ -7,6 +7,40 @@ import json
 from .models import RoomMember
 from django.views.decorators.csrf import csrf_exempt
 
+from django.urls import reverse_lazy
+from django.contrib.auth.views import LoginView
+from django.contrib.auth.decorators import login_required
+from django.views.generic.edit import FormView
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth import login
+
+class CustomLoginView(LoginView):
+     template_name = 'base/login.html'
+     fields = '__all__'
+     redirect_authenticated_user = True
+
+     def get_success_url(self):
+         return reverse_lazy('lobby')
+     
+class SignIn(FormView):
+    template_name = 'base/signin.html'
+    form_class = UserCreationForm
+    redirect_authenticated_user = True
+    success_url = reverse_lazy('lobby')
+
+    def form_valid(self, form):
+        user=form.save()
+        if user is not None:
+            login(self.request, user)
+        return super(SignIn, self).form_valid(form)
+    
+    def get(self, *args, **kwargs):
+        if self.request.user.is_authenticated:
+            return redirect('lobby')
+        
+        return super(SignIn, self).get(*args, **kwargs)
+
+@login_required(login_url='/login/')
 # View to generate an Agora RTC token.
 def getToken(request):
     # Agora app credentials (replace with actual credentials for production use).
@@ -32,18 +66,17 @@ def getToken(request):
     # Return the generated token and UID as a JSON response.
     return JsonResponse({'token': token, 'uid': uid}, safe=False)
 
+@login_required(login_url='/login/')
 # View to render the lobby page.
 def lobby(request):
     return render(request, 'base/lobby.html')
 
+@login_required(login_url='/login/')
 # View to render the room page.
 def room(request):
     return render(request, 'base/room.html')
 
-# View to render the login page.
-def login(request):
-    return render(request, 'base/login.html')
-
+@login_required(login_url='/login/')
 # View to create a new RoomMember entry in the database.
 @csrf_exempt  # Exempt from CSRF protection since the request method is POST and coming from JavaScript.
 def createMember(request):
@@ -59,6 +92,7 @@ def createMember(request):
     # Return the user's name in a JSON response.
     return JsonResponse({'name': data['name']}, safe=False)
 
+@login_required(login_url='/login/')
 # View to fetch a RoomMember's information based on UID and room name.
 def getMember(request):
     uid = request.GET.get('UID')  # Get the UID from the query parameters.
@@ -73,6 +107,7 @@ def getMember(request):
     # Return the member's name as a JSON response.
     return JsonResponse({'name': member.name}, safe=False)
 
+@login_required(login_url='/login/')
 # View to delete a RoomMember entry from the database.
 @csrf_exempt  # Exempt from CSRF protection since this is a DELETE request from JavaScript.
 def deleteMember(request):

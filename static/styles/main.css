@@ -11,21 +11,45 @@ body {
     font-family: 'Roboto', sans-serif;
 }
 
-/* ------------------  Login Page  -------------------*/
-
-.forgot-password {
-    text-align: center;
-    margin-top: 20px;
+/* ------------------  Auth Section  ------------------ */
+#auth-section {
+    display: flex;
+    justify-content: space-between;
 }
 
-.forgot-password a {
-    text-decoration: none;
+#auth-section h3 {
+    margin: 0;
+    padding-top: 8px;
 }
 
-.forgot-password a:hover {
-    text-decoration: underline;
+.login-field {
+    margin-bottom: 10px;
 }
 
+.login-field label {
+    font-size: 16px;
+    line-height: 1.7em;
+}
+
+.login-field input {
+    width: 100%;
+    border: 2px solid rgba(198, 202, 219, 1);
+    border-radius: 5px;
+    padding: 10px;
+    font-size: 16px;
+    box-sizing: border-box;
+}
+
+.login-field input[type='submit'] {
+    background-color: rgb(75, 93, 172);
+    border: none;
+    color: #fff;
+    cursor: pointer;
+}
+
+.login-field input[type='submit']:hover {
+    background-color: rgb(68, 100, 238);
+}
 
 /* ------------------  Register Page  ------------------ */
 
@@ -44,7 +68,7 @@ body {
 #logo {
     display: block;
     width: 100px;
-    margin: 0 auto;
+    margin: 30px auto;
 }
 
 #welcome-message {
@@ -86,6 +110,7 @@ body {
     border: none;
     color: #fff;
     cursor: pointer;
+    margin-top: 10px;
 }
 
 .form-field input[type='submit']:hover {

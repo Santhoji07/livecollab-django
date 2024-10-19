@@ -4,10 +4,24 @@
 {% block content %}
 
 <main>
-
     <section id="form-container">
+        <div id="auth-section">
+            {% if request.user.is_authenticated %}
+            <h3>{{ request.user | title }}</h2>
+            <form class="login-field" method="POST" action="{% url 'logout' %}">
+                {% csrf_token %}
+                <input type="submit" value="Logout"></input>
+            </form>
+            {% else %}
+            <form class="login-field" method="POST" action="{% url 'login' %}">
+                {% csrf_token %}
+                <input type="submit" value="Login"></input>
+            </form>
+            {% endif %}
+        </div>
+        <hr>
 
-        <img id="logo" src="{% static 'images/chat-icon.png' %}"/>
+        <img id="logo" src="{% static 'images/chat-icon.png' %}" />
 
         <div id="welcome-message">
             <h1>Welcome to MyChat</h1>
@@ -19,12 +33,12 @@
 
                 <div class="form-field">
                     <label>Room:</label>
-                    <input name="room" placeholder="Enter a room name"  style="text-transform:uppercase"/>
+                    <input name="room" placeholder="Enter a room name" style="text-transform:uppercase" />
                 </div>
 
                 <div class="form-field">
                     <label>Name:</label>
-                    <input name="username" placeholder="Enter your name"/>
+                    <input name="username" placeholder="Enter your name" value={{ request.user | title }} />
                 </div>
 
                 <div class="form-field">
