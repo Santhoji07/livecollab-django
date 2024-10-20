@@ -7,8 +7,72 @@
 }
 
 body {
-    background-color: rgba(232, 233, 239, 1);
+    position: relative;
     font-family: 'Roboto', sans-serif;
+    min-height: 100vh;
+    margin: 0;
+    overflow: hidden;
+}
+
+body::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), 
+                      url('../../static/images/lobby.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    z-index: -1;
+}
+
+/* ------------------  Login Section  ------------------ */
+.login-container {
+    position: relative;
+    font-family: 'Roboto', sans-serif;
+    min-height: 100vh;
+    margin: 0;
+    overflow: hidden;
+}
+
+.login-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('../../static/images/login.jpg'); 
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    z-index: -1;
+}
+
+/* ------------------  Sign In Section  ------------------ */
+.signin-container {
+    position: relative;
+    font-family: 'Roboto', sans-serif;
+    min-height: 100vh;
+    margin: 0;
+    overflow: hidden;
+}
+
+.signin-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('../../static/images/signin.jpg'); 
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    z-index: -1;
 }
 
 /* ------------------  Auth Section  ------------------ */
@@ -131,6 +195,28 @@ body {
 
 
 /* ----------------- Room Styling ------------------*/
+.room-container {
+    position: relative;
+    font-family: 'Roboto', sans-serif;
+    min-height: 100vh;
+    margin: 0;
+    overflow: hidden;
+}
+
+.room-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('../../static/images/login.jpg'); 
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    z-index: -1;
+}
+
 #room-name-wrapper {
     text-align: center;
     font-size: 18px;
@@ -161,7 +247,7 @@ body {
     width: 100%;
 }
 
-.video-player>* {
+.video-player > * {
     border-radius: 5px;
 }
 
