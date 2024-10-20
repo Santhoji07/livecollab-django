@@ -32,7 +32,7 @@ class CustomLoginView(LoginView):
 # View to handle user sign-up, including account creation and automatic login upon successful registration.
 class SignUp(FormView):
     # Specify the template to be used for the sign-up page
-    template_name = 'base/signin.html'
+    template_name = 'base/signup.html'
     # Use the UserCreationForm for signing up new users
     form_class = UserCreationForm
     # Redirect authenticated users to another page instead of showing the sign-up page

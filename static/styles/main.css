@@ -52,8 +52,8 @@ body::before {
     z-index: -1;
 }
 
-/* ------------------  Sign In Section  ------------------ */
-.signin-container {
+/* ------------------  Sign Up Section  ------------------ */
+.signup-container {
     position: relative;
     font-family: 'Roboto', sans-serif;
     min-height: 100vh;
@@ -61,14 +61,14 @@ body::before {
     overflow: hidden;
 }
 
-.signin-container::before {
+.signup-container::before {
     content: '';
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
-    background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('../../static/images/signin.jpg'); 
+    background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('../../static/images/signup.jpg'); 
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
