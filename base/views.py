@@ -30,12 +30,12 @@ class CustomLoginView(LoginView):
      
 
 # View to handle user sign-up, including account creation and automatic login upon successful registration.
-class SignIn(FormView):
-    # Specify the template to be used for the sign-in page
+class SignUp(FormView):
+    # Specify the template to be used for the sign-up page
     template_name = 'base/signin.html'
     # Use the UserCreationForm for signing up new users
     form_class = UserCreationForm
-    # Redirect authenticated users to another page instead of showing the sign-in page
+    # Redirect authenticated users to another page instead of showing the sign-up page
     redirect_authenticated_user = True
     # Specify the URL to redirect to upon successful form submission
     success_url = reverse_lazy('lobby')
@@ -45,7 +45,7 @@ class SignIn(FormView):
         user = form.save()
         if user is not None:
             login(self.request, user)  # Log in the newly created user
-        return super(SignIn, self).form_valid(form)  # Proceed with the usual form validation flow
+        return super(SignUp, self).form_valid(form)  # Proceed with the usual form validation flow
     
     def get(self, *args, **kwargs):
         # Check if the user is already authenticated
@@ -53,7 +53,7 @@ class SignIn(FormView):
             # Redirect authenticated users to the 'lobby'
             return redirect('lobby')
         
-        return super(SignIn, self).get(*args, **kwargs)  # Otherwise, render the sign-in page
+        return super(SignUp, self).get(*args, **kwargs)  # Otherwise, render the sign-up page
 
 
 # Ensure that the user is logged in before accessing the decorated view
