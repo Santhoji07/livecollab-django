@@ -1,0 +1,232 @@
+{% extends 'base/main.html' %}
+{% load static %}
+
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Video Collaboration - ConnectX</title>
+    <meta name="description" content="ConnectX - Seamless video collaboration for teams and individuals. Join or host meetings with ease.">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background-color: #f3f6fc;
+            color: #333;
+            overflow-x: hidden;
+        }
+
+        /* Banner Section */
+        .banner {
+            width: 100vw;
+            height: 100vh;
+            background-image: url("{% static 'images/bg2.avif' %}");
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: cover;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffffff;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .banner::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url("{% static 'images/bg2.avif' %}");
+            background-size: cover;
+            background-position: center;
+            opacity: 0.2;
+            z-index: -1;
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 40px;
+            max-width: 600px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(8px);
+            animation: fadeIn 1.5s ease;
+        }
+
+        .glass h1 {
+            font-size: 50px;
+            margin-bottom: 20px;
+            animation: slideIn 1s ease;
+            font-weight: 700;
+        }
+
+        .glass p {
+            font-size: 18px;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            animation: fadeInText 2s ease;
+            font-weight: 500;
+        }
+
+        button {
+            padding: 12px 30px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #0066cc;
+            background-color: #ffffff;
+            border: none;
+            border-radius: 25px;
+            margin: 10px;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            box-shadow: 0 4px 12px rgba(0, 102, 204, 0.2);
+            position: relative;
+            overflow: hidden;
+            z-index: 2;
+        }
+
+        button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background-color: #4d94ff;
+            transition: all 0.4s ease;
+            z-index: 1;
+        }
+
+        button:hover::before {
+            left: 0;
+        }
+
+        button:hover {
+            color: #ffffff;
+            transform: scale(1.05);
+        }
+
+        header {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            padding: 15px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: rgba(0, 66, 130, 0.8);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            z-index: 10;
+        }
+
+        header h1 {
+            color: #ffffff;
+            font-size: 28px;
+        }
+
+        nav a {
+            color: #ffffff;
+            text-decoration: none;
+            margin-left: 20px;
+            font-size: 18px;
+            font-weight: bold;
+            transition: color 0.3s;
+        }
+
+        nav a:hover {
+            color: #b3d1ff;
+        }
+
+        /* Keyframe Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(-20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes fadeInText {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Additional Sections */
+        .section {
+            padding: 50px 20px;
+            text-align: center;
+        }
+
+        .section h2 {
+            font-size: 32px;
+            margin-bottom: 15px;
+            color: #0066cc;
+        }
+
+        .section p {
+            max-width: 700px;
+            margin: auto;
+            font-size: 18px;
+            line-height: 1.6;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+    <script>
+        function login() {
+            window.location.href = "{% url 'login' %}"; // Django URL for login
+        }
+
+        function joinMeeting() {
+            window.location.href = "{% url 'join_meeting' %}"; // Adjust to match Django URL path
+        }
+
+        function hostMeeting() {
+            window.location.href = "{% url 'host_meeting' %}"; // Adjust to match Django URL path
+        }
+    </script>
+
+    <header>
+        <h1>ConnectX</h1>
+        <nav>
+            <a href="#home">Home</a>
+            <a href="#about">About Us</a>
+            <a href="#contact">Contact</a>
+            <a href="javascript:login()">Login</a>
+        </nav>
+    </header>
+
+    <section class="banner" id="home">
+        <div class="glass">
+            <h1>Virtual Collaboration Made Simple</h1>
+            <p>Join or host a high-quality virtual meeting with a single click. Connect with your team from anywhere, anytime.</p>
+            <button onclick="joinMeeting()">Join a Meeting</button>
+            <button onclick="hostMeeting()">Host a Meeting</button>
+        </div>
+    </section>
+
+    <section id="about" class="section">
+        <h2>About ConnectX</h2>
+        <p>ConnectX is a video collaboration platform designed for ease and efficiency. With secure, high-definition video and audio, our platform ensures smooth communication for teams and individuals alike.</p>
+    </section>
+
+    <section id="contact" class="section">
+        <h2>Contact Us</h2>
+        <p>For any support or inquiries, reach out at support@connectx.com or call +1-234-567-890.</p>
+    </section>
+</body>
+</html>
+{% endblock content %}

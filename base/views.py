@@ -14,6 +14,9 @@ from django.views.generic.edit import FormView
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import login
 
+@login_required(login_url='/login/')  # Optional: Require login for homepage
+def home(request):
+    return render(request, 'base/home.html') 
 
 # View to handle user login with a custom template and redirection for authenticated users.
 class CustomLoginView(LoginView):
