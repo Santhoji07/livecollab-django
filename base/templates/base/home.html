@@ -191,11 +191,11 @@
         }
 
         function joinMeeting() {
-            window.location.href = "{% url 'join_meeting' %}"; // Adjust to match Django URL path
+            window.location.href = "{% url 'room' %}"; 
         }
 
         function hostMeeting() {
-            window.location.href = "{% url 'host_meeting' %}"; // Adjust to match Django URL path
+            window.location.href = "{% url 'room' %}"; 
         }
     </script>
 
