@@ -4,7 +4,7 @@ from agora_token_builder import RtcTokenBuilder
 import random
 import time
 import json
-from .models import RoomMember
+from .models import RoomMember, RoomToken
 from django.views.decorators.csrf import csrf_exempt
 
 from django.urls import reverse_lazy
@@ -14,9 +14,15 @@ from django.views.generic.edit import FormView
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import login
 
-@login_required(login_url='/login/')  # Optional: Require login for homepage
+
 def home(request):
     return render(request, 'base/home.html') 
+
+def about(request):
+    return render(request, 'base/about.html')
+
+def contact(request):
+    return render(request, 'base/contact.html')
 
 # View to handle user login with a custom template and redirection for authenticated users.
 class CustomLoginView(LoginView):
@@ -28,8 +34,8 @@ class CustomLoginView(LoginView):
     redirect_authenticated_user = True
 
     def get_success_url(self):
-        # Redirect to the 'lobby' URL upon successful login
-        return reverse_lazy('lobby')
+        # Redirect to the 'home' URL upon successful login
+        return reverse_lazy('home')
      
 
 # View to handle user sign-up, including account creation and automatic login upon successful registration.
@@ -41,7 +47,7 @@ class SignUp(FormView):
     # Redirect authenticated users to another page instead of showing the sign-up page
     redirect_authenticated_user = True
     # Specify the URL to redirect to upon successful form submission
-    success_url = reverse_lazy('lobby')
+    success_url = reverse_lazy('home')
 
     def form_valid(self, form):
         # Save the user and log them in if the form is valid
@@ -53,8 +59,8 @@ class SignUp(FormView):
     def get(self, *args, **kwargs):
         # Check if the user is already authenticated
         if self.request.user.is_authenticated:
-            # Redirect authenticated users to the 'lobby'
-            return redirect('lobby')
+            # Redirect authenticated users to the 'home'
+            return redirect('home')
         
         return super(SignUp, self).get(*args, **kwargs)  # Otherwise, render the sign-up page
 
@@ -69,7 +75,26 @@ def getToken(request):
     
     # Get the channel name from the request.
     channelName = request.GET.get('channel')
-    
+
+    # Get action type (host/join)
+    action_type = request.GET.get('actionType')
+
+    # Check if the room already exists only if the user is hosting
+    if action_type == 'host':
+        # Query the database to check if a room with the given channel name already exists.
+        existing_token = RoomToken.objects.filter(room_name=channelName).first()
+        # If the room already exists, return an error response.
+        if existing_token:
+            return JsonResponse({'error': 'Room already exists'}, status=400)
+
+    # Check if the room exists when the user is trying to join.   
+    elif action_type == 'join':
+        # Query the database to check if a room exists
+        existing_token = RoomToken.objects.filter(room_name=channelName).first()
+        # If the room does not exist, return an error response.
+        if not existing_token:
+            return JsonResponse({'error': 'Room does not exist'}, status=404)
+        
     # Generate a random UID (User ID) between 1 and 230.
     uid = random.randint(1, 230)
     
@@ -82,6 +107,10 @@ def getToken(request):
     
     # Build the Agora RTC token using the UID and other details.
     token = RtcTokenBuilder.buildTokenWithUid(appId, appCertificate, channelName, uid, role, privilegeExpiredTs)
+
+    # If the user is hosting, create a new RoomToken entry in the database.
+    if action_type == 'host':
+        RoomToken.objects.create(room_name=channelName, token=token, uid=uid)
     
     # Return the generated token and UID as a JSON response.
     return JsonResponse({'token': token, 'uid': uid}, safe=False)
@@ -91,7 +120,8 @@ def getToken(request):
 @login_required(login_url='/login/')
 # View to render the lobby page.
 def lobby(request):
-    return render(request, 'base/lobby.html')
+    action_type = request.GET.get('actionType', 'join')  # Default to 'join' if not specified
+    return render(request, 'base/lobby.html', {'action_type': action_type})
 
 
 # Ensure that the user is logged in before accessing the decorated view
@@ -152,6 +182,13 @@ def deleteMember(request):
 
     # Delete the RoomMember entry.
     member.delete()
+
+    # Check if there are any members remaining in the room.
+    remaining_members = RoomMember.objects.filter(room_name=data['room_name']).exists()
+    
+    # If no members remain in the room, delete the RoomToken entry.
+    if not remaining_members:
+        RoomToken.objects.filter(room_name=data['room_name']).delete()
     
     # Return a confirmation message as a JSON response.
     return JsonResponse('Member was deleted', safe=False)

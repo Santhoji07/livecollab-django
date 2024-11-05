@@ -19,7 +19,7 @@
                     {{ form.username }}
 
                     {% if form.username.errors %}
-                    <div style="color: red; margin-top: 5px;">
+                    <div style="color: red; margin-top: 5px; font-weight: bold;">
                         {% for error in form.username.errors %}
                         {{ error }}<br>
                         {% endfor %}
@@ -33,7 +33,7 @@
                     {{ form.password }}
 
                     {% if form.password.errors %}
-                    <div style="color: red; margin-top: 5px;">
+                    <div style="color: red; margin-top: 5px; font-weight: bold;">
                         {% for error in form.password.errors %}
                         {{ error }}<br>
                         {% endfor %}
@@ -47,7 +47,7 @@
                 </div>
 
                 {% if form.non_field_errors %}
-                <div style="color: red;">
+                <div style="color: red; margin-bottom: 15px; text-align: center; font-weight: bold;">
                     {% for error in form.non_field_errors %}
                     {{ error }}<br>
                     {% endfor %}
@@ -57,7 +57,7 @@
             </div>
         </form>
 
-        <p style="text-align: center;">Don't have an account? <a href="{% url 'signup' %}" style="text-decoration: none;">Sign Up</a></p>
+        <p style="text-align: center;">Don't have an account? <a href="{% url 'signup' %}" style="text-decoration: none; font-weight: bold; color: blueviolet;">Sign Up</a></p>
     </section>
 </main>
 

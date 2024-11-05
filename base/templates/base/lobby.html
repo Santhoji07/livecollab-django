@@ -5,73 +5,97 @@
 
 <main>
     <section id="form-container">
-        <div id="auth-section">
-            {% if request.user.is_authenticated %}
-            <h3>{{ request.user | title }}</h2>
-            <form class="login-field" method="POST" action="{% url 'logout' %}">
-                {% csrf_token %}
-                <input type="submit" value="Logout"></input>
-            </form>
-            {% else %}
-            <form class="login-field" method="POST" action="{% url 'login' %}">
-                {% csrf_token %}
-                <input type="submit" value="Login"></input>
-            </form>
-            {% endif %}
-        </div>
-        <hr>
-
-        <img id="logo" src="{% static 'images/chat-icon.png' %}" />
 
         <div id="welcome-message">
-            <h1>Welcome to MyChat</h1>
-            <p><b>A group video calling platform made just for you!</b></p>
+            <h1>
+
+                Hello
+                {% if request.user.is_authenticated %}
+                {{ request.user | title }}
+                {% endif %}
+
+            </h1>
         </div>
 
         <form id="form">
             <div class="field-wrapper">
 
                 <div class="form-field">
-                    <label>Room:</label>
-                    <input name="room" placeholder="Enter a room name" style="text-transform:uppercase" />
+                    <label style="font-weight: bold;">Room:</label>
+                    <input name="room" placeholder="Enter a room name" style="text-transform:uppercase" required />
+
+                    <!-- Error message container -->
+                    <div id="error-message" style="color: red; margin-top: 5px; font-weight: bold; display: none;">
+                    </div>
                 </div>
 
                 <div class="form-field">
-                    <label>Name:</label>
-                    <input name="username" placeholder="Enter your name" value={{ request.user | title }} />
+                    <label style="font-weight: bold;">Name:</label>
+                    <input name="username" placeholder="Enter your name" value={{ request.user | title }} required />
                 </div>
 
                 <div class="form-field">
+                    {% if action_type == 'host' %}
+                    <input type="submit" value="Host Stream" />
+                    {% else %}
                     <input type="submit" value="Join Stream" />
+                    {% endif %}
                 </div>
+
             </div>
         </form>
     </section>
 </main>
 
 <script>
-    let form = document.getElementById('form')
+    
+    let form = document.getElementById('form')  // Get the form element by its ID.
+    let errorMessage = document.getElementById('error-message')  // Get the error message container.
 
-    let handleSubmit = async (e) => {
-        e.preventDefault()
-        let room = e.target.room.value.toUpperCase()
-        let name = e.target.username.value
+    let handleSubmit = async (e) => {  // Define an asynchronous function to handle form submission.
+        e.preventDefault()  // Prevent the default form submission behavior.
+        let room = e.target.room.value.toUpperCase()  // Get the room name and convert it to uppercase.
+        let name = e.target.username.value  // Get the username from the form.
 
-        let response = await fetch(`/get_token/?channel=${room}`)
-        let data = await response.json()
+        // Reset the error message display
+        errorMessage.style.display = 'none'  // Hide the error message initially.
+        errorMessage.textContent = ''  // Clear any previous error message.
 
-        let UID = data.uid
-        let token = data.token
+        try {
+            // Make a fetch request to the server to get the token for the specified channel and action type.
+            let response = await fetch(`/get_token/?channel=${room}&actionType={{ action_type }}`)
 
-        sessionStorage.setItem('UID', UID)
-        sessionStorage.setItem('token', token)
-        sessionStorage.setItem('room', room)
-        sessionStorage.setItem('name', name)
+            // Check if the server returned a 400 error (Bad Request) or a 404 error (Not Found).
+            if (response.status === 400 || response.status === 404) {
+                let errorData = await response.json()  // Parse the error response as JSON.
+                errorMessage.textContent = errorData.error  // Display the error message in the UI.
+                errorMessage.style.display = 'block'  // Show the error message.
+                return  
+            }
 
-        window.open('/room/', '_self')
+            let data = await response.json()  // Parse the successful response as JSON.
+
+            let UID = data.uid  // Extract the UID from the response.
+            let token = data.token  // Extract the token from the response.
+
+            // Store the UID, token, room name, and username in session storage for later use.
+            sessionStorage.setItem('UID', UID)
+            sessionStorage.setItem('token', token)
+            sessionStorage.setItem('room', room)
+            sessionStorage.setItem('name', name)
+
+            // Redirect the user to the room page.
+            window.open('/room/', '_self')
+        } catch (error) {  // Catch any errors that occur during the fetch or JSON parsing.
+            console.error('Error:', error)  // Log the error to the console.
+            errorMessage.textContent = 'An unexpected error occurred. Please try again.'  // Display a generic error message.
+            errorMessage.style.display = 'block'  // Show the error message.
+        }
     }
 
+    // Attach the handleSubmit function to the form's submit event.
     form.addEventListener('submit', handleSubmit)
+
 </script>
 
 {% endblock content %}

@@ -19,7 +19,7 @@
                     {{ form.username }}
 
                     {% if form.username.errors %}
-                    <div style="color: red; margin-top: 5px;">
+                    <div style="color: red; margin-top: 5px; font-weight: bold;">
                         {% for error in form.username.errors %}
                         {{ error }}<br>
                         {% endfor %}
@@ -33,7 +33,7 @@
                     {{ form.password1 }}
 
                     {% if form.password1.errors %}
-                    <div style="color: red; margin-top: 5px;">
+                    <div style="color: red; margin-top: 5px; font-weight: bold;">
                         {% for error in form.password1.errors %}
                         {{ error }}<br>
                         {% endfor %}
@@ -47,7 +47,7 @@
                     {{ form.password2 }}
 
                     {% if form.password2.errors %}
-                    <div style="color: red; margin-top: 5px;">
+                    <div style="color: red; margin-top: 5px; font-weight: bold;">
                         {% for error in form.password2.errors %}
                         {{ error }}<br>
                         {% endfor %}
@@ -61,7 +61,7 @@
                 </div>
 
                 {% if form.non_field_errors %}
-                <div style="color: red; margin-top: 5px;">
+                <div style="color: red; margin-bottom: 15px; text-align: center; font-weight: bold;">
                     {% for error in form.non_field_errors %}
                     {{ error }}<br>
                     {% endfor %}
@@ -71,7 +71,7 @@
             </div>
         </form>
 
-        <p style="text-align: center;">Already have an account? <a href="{% url 'login' %}" style="text-decoration: none;">Login</a></p>
+        <p style="text-align: center;">Already have an account? <a href="{% url 'login' %}" style="text-decoration: none; font-weight: bold; color: blueviolet;">Login</a></p>
     </section>
 </main>
 

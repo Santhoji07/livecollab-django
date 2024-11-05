@@ -4,10 +4,183 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MyChat</title>
+    <!-- <title>MyChat</title> -->
+    <title>UnityHub</title>
+    <meta name="description" content="UnityHub - Seamless video collaboration for teams and individuals. Join or host meetings with ease.">
     <link rel='stylesheet' type='text/css' media='screen' href="{% static 'styles/main.css' %}?v={{ STATIC_VERSION }}">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            scroll-behavior: smooth;
+        }
+
+        /* Banner Section */
+        .banner {
+            width: 100vw;
+            height: 100vh;
+            background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url("{% static 'images/bg2.avif' %}");
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: cover;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffffff;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .banner::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url("{% static 'images/bg2.avif' %}");
+            background-size: cover;
+            background-position: center;
+            opacity: 0.2;
+            z-index: -1;
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 40px;
+            max-width: 600px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(8px);
+            animation: fadeIn 1.5s ease;
+            box-sizing: border-box;
+        }
+
+        .glass h1 {
+            font-size: 50px;
+            margin-bottom: 20px;
+            animation: slideIn 1s ease;
+            font-weight: 700;
+        }
+
+        .glass p {
+            font-size: 18px;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            animation: fadeInText 2s ease;
+            font-weight: 500;
+        }
+
+        button {
+            padding: 12px 30px;
+            font-size: 18px;
+            font-weight: bold;
+            background-color: #ffffff;
+            border: none;
+            border-radius: 25px;
+            margin: 10px;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            box-shadow: 0 4px 12px rgba(0, 10, 20, 0.2);
+            position: relative;
+            overflow: hidden;
+            z-index: 2;
+        }
+
+        button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            transition: all 0.4s ease;
+            z-index: 1;
+        }
+
+        button:hover::before {
+            left: 0;
+        }
+
+        button:hover {
+            transform: scale(1.05);
+        }
+
+        header {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            padding: 15px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: rgba(0, 66, 130, 0.8);;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            z-index: 10;
+            box-sizing: border-box;
+        }
+
+        header h1 {
+            color: #ffffff;
+            font-size: 28px;
+        }
+
+        nav a {
+            color: #ffffff;
+            text-decoration: none;
+            margin-left: 20px;
+            font-size: 18px;
+            font-weight: bold;
+            transition: color 0.3s;
+        }
+
+        nav a:hover {
+            color: #b3d1ff;
+        }
+
+        /* Keyframe Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(-20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes fadeInText {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Additional Sections */
+        .section {
+            padding: 50px 20px;
+            text-align: center;
+        }
+
+        .section h2 {
+            font-size: 32px;
+            margin-bottom: 15px;
+            color: #0066cc;
+        }
+
+        .section p {
+            max-width: 700px;
+            margin: auto;
+            font-size: 18px;
+            line-height: 1.6;
+            color: #555;
+        }
+    </style>
 </head>
 <body>
+    <!--Header content-->
+    {% include 'partials/_header.html' %}
+
     {% block content %}
 
     {% endblock content %}

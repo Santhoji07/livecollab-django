@@ -1,0 +1,35 @@
+{% if request.path != '/room/' %}
+
+<header>
+    <a href="{% url 'home' %}" style="text-decoration: none;">
+        <h1>UnityHub</span></h1>
+    </a>
+
+    <nav>
+        <a href="{% url 'home' %}">Home</a>
+        <a href="{% url 'about' %}">About Us</a>
+        <a href="{% url 'contact' %}">Contact</a>
+
+        {% if user.is_authenticated %}
+        <!-- Form to handle logout if the user is authenticated -->
+        <form id="logout-form" method="POST" action="{% url 'logout' %}" style="display: inline;">
+            {% csrf_token %}
+            <!-- Link styled as 'Logout'; triggers form submission via JavaScript -->
+            <!-- 'return false;' prevents the default anchor link action, so only the form submits -->
+            <a href="#" onclick="document.getElementById('logout-form').submit(); return false;">Logout</a>
+        </form>
+        
+        {% else %}
+        <!-- Form to handle login if the user is not authenticated -->
+        <form id="login-form" method="POST" action="{% url 'login' %}" style="display: inline;">
+            {% csrf_token %}
+            <!-- Link styled as 'Login'; triggers form submission via JavaScript -->
+            <!-- 'return false;' prevents the default anchor link action, so only the form submits -->
+            <a href="#" onclick="document.getElementById('login-form').submit(); return false;">Login</a>
+        </form>
+        {% endif %}
+
+    </nav>
+</header>
+
+{% endif %}
