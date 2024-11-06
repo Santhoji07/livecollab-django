@@ -1,8 +1,8 @@
-# MyChat - Video Chat Web Application using Django
+# UnityHub - Video Chat Web Application using Django
 
 ## Project Overview
 
-**MyChat** is a web application designed to facilitate real-time video chats, built with Django as the backend framework. It leverages the Agora Real-Time Voice and Video Engagement SDK to deliver high-quality video and voice communication. MyChat provides users with a smooth and interactive experience, making it an ideal platform for both personal and professional video calls.
+**UnityHub** is a web application designed to facilitate real-time video chats, built with Django as the backend framework. It leverages the Agora Real-Time Voice and Video Engagement SDK to deliver high-quality video and voice communication. UnityHub provides users with a smooth and interactive experience, making it an ideal platform for both personal and professional video calls.
 
 ### Key Features:
 - **Real-Time Video & Voice**: High-quality, low-latency video and voice communication powered by Agora's SDK.
@@ -143,7 +143,7 @@ pip install agora-token-builder
 ## How to Use This Source Code:
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/SumithShetty1/mychat.git
+git clone https://github.com/SumithShetty1/unityhub.git
 ```
 
 ### 2. Install Requirements
@@ -151,7 +151,7 @@ git clone https://github.com/SumithShetty1/mychat.git
 To install the necessary dependencies for the project, navigate to the project directory and run the following command:
 
 ```bash
-cd mychat
+cd unityhub
 pip install -r requirements.txt
 ```
 
