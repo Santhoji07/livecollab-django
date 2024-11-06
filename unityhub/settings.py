@@ -50,7 +50,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'mychat.urls'
+ROOT_URLCONF = 'unityhub.urls'
 
 TEMPLATES = [
     {
@@ -68,7 +68,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'mychat.wsgi.application'
+WSGI_APPLICATION = 'unityhub.wsgi.application'
 
 
 # Database
