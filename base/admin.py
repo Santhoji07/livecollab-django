@@ -1,6 +1,7 @@
 from django.contrib import admin
-from .models import RoomMember, RoomToken
+from .models import RoomMember, Room, RoomRequest
 
 # Register your models here.
 admin.site.register(RoomMember)
-admin.site.register(RoomToken)
+admin.site.register(Room)
+admin.site.register(RoomRequest)

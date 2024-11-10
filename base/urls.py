@@ -15,4 +15,8 @@ urlpatterns = [
     path('create_member/',views.createMember),
     path('get_member/',views.getMember),
     path('delete_member/',views.deleteMember),
+    path('join_room/<str:room_name>/', views.handle_join_request, name='handle_join_request'),
+    path('check_pending_requests/<str:room_name>/', views.check_pending_requests, name='check_pending_requests'),
+    path('approve_join_request/<str:room_name>/<int:request_id>/', views.approve_join_request, name='approve_join_request'),
+    path('check_join_request_status/<str:room_name>/<int:user_id>/', views.check_join_request_status, name='check_join_request_status'),
 ]

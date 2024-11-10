@@ -8,12 +8,10 @@
 
         <div id="welcome-message">
             <h1>
-
                 Hello
                 {% if request.user.is_authenticated %}
                 {{ request.user | title }}
                 {% endif %}
-
             </h1>
         </div>
 
@@ -29,9 +27,9 @@
                     </div>
                 </div>
 
-                <div class="form-field">
+                <div class="form-field" hidden>
                     <label style="font-weight: bold;">Name:</label>
-                    <input name="username" placeholder="Enter your name" value={{ request.user | title }} required />
+                    <input name="username" placeholder="Enter your name" value="{{ request.user | title }}" required />
                 </div>
 
                 <div class="form-field">
@@ -44,58 +42,136 @@
 
             </div>
         </form>
+
+        <!-- Lobby message container -->
+        <div id="lobby-message" style="margin-top: 15px; font-weight: bold; color: red; text-align: center;"></div>
+
     </section>
 </main>
 
 <script>
-    
-    let form = document.getElementById('form')  // Get the form element by its ID.
-    let errorMessage = document.getElementById('error-message')  // Get the error message container.
+    const form = document.getElementById('form');
+    const errorMessage = document.getElementById('error-message');
+    const lobbyMessage = document.getElementById('lobby-message');
+    const actionType = '{{ action_type }}';
+    let userId, roomName; // Declare globally to access them in polling function.
 
-    let handleSubmit = async (e) => {  // Define an asynchronous function to handle form submission.
-        e.preventDefault()  // Prevent the default form submission behavior.
-        let room = e.target.room.value.toUpperCase()  // Get the room name and convert it to uppercase.
-        let name = e.target.username.value  // Get the username from the form.
+    // Handle form submission
+    let handleSubmit = async (e) => {
+        e.preventDefault();
+        roomName = e.target.room.value.toUpperCase();
+        const name = e.target.username.value;
+        userId = "{{ request.user.id }}"; // Assuming user ID is available in the template context
 
-        // Reset the error message display
-        errorMessage.style.display = 'none'  // Hide the error message initially.
-        errorMessage.textContent = ''  // Clear any previous error message.
+        errorMessage.style.display = 'none';
+        errorMessage.textContent = '';
 
         try {
-            // Make a fetch request to the server to get the token for the specified channel and action type.
-            let response = await fetch(`/get_token/?channel=${room}&actionType={{ action_type }}`)
-
-            // Check if the server returned a 400 error (Bad Request) or a 404 error (Not Found).
+            let response = await fetch(`/get_token/?channel=${roomName}&actionType=${actionType}`);
             if (response.status === 400 || response.status === 404) {
-                let errorData = await response.json()  // Parse the error response as JSON.
-                errorMessage.textContent = errorData.error  // Display the error message in the UI.
-                errorMessage.style.display = 'block'  // Show the error message.
-                return  
+                let errorData = await response.json();
+                errorMessage.textContent = errorData.error;
+                errorMessage.style.display = 'block';
+                return;
             }
 
-            let data = await response.json()  // Parse the successful response as JSON.
+            let data = await response.json();
+            let UID = data.uid;
+            let token = data.token;
 
-            let UID = data.uid  // Extract the UID from the response.
-            let token = data.token  // Extract the token from the response.
+            sessionStorage.setItem('UID', UID);
+            sessionStorage.setItem('token', token);
+            sessionStorage.setItem('room', roomName);
+            sessionStorage.setItem('name', name);
 
-            // Store the UID, token, room name, and username in session storage for later use.
-            sessionStorage.setItem('UID', UID)
-            sessionStorage.setItem('token', token)
-            sessionStorage.setItem('room', room)
-            sessionStorage.setItem('name', name)
+            if (actionType === 'join') {
+                requestToJoinRoom(roomName, name, UID); // Pass name and UID to requestToJoinRoom
+            } else {
+                window.open('/room/', '_self');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            errorMessage.textContent = 'An unexpected error occurred. Please try again.';
+            errorMessage.style.display = 'block';
+        }
+    };
 
-            // Redirect the user to the room page.
-            window.open('/room/', '_self')
-        } catch (error) {  // Catch any errors that occur during the fetch or JSON parsing.
-            console.error('Error:', error)  // Log the error to the console.
-            errorMessage.textContent = 'An unexpected error occurred. Please try again.'  // Display a generic error message.
-            errorMessage.style.display = 'block'  // Show the error message.
+    // Request to join a room
+    async function requestToJoinRoom(room, name, uid) {
+        try {
+            const response = await fetch(`/join_room/${room}/`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": getCookie('csrftoken')
+                },
+                body: JSON.stringify({ uid, name })
+            });
+            const dataResponse = await response.json();
+
+            if (dataResponse.status === "pending_approval") {
+                lobbyMessage.innerText = dataResponse.message;
+                // Start polling for approval status
+                startPollingJoinStatus();
+            } else {
+                lobbyMessage.innerText = dataResponse.message;
+                window.open('/room/', '_self');
+            }
+        } catch (error) {
+            console.error("Error requesting to join:", error);
         }
     }
 
-    // Attach the handleSubmit function to the form's submit event.
-    form.addEventListener('submit', handleSubmit)
+    // Polling function to check join request status
+    async function checkJoinRequestStatus() {
+        try {
+            const response = await fetch(`/check_join_request_status/${roomName}/${userId}/`);
+            const data = await response.json();
 
+            if (data.status === "success") {
+                if (data.join_status === 'approved') {
+                    lobbyMessage.innerText = "Your request to join has been approved!";
+                    clearInterval(statusInterval); // Stop polling after approval
+                    window.open('/room/', '_self');
+                } else if (data.join_status === 'denied') {
+                    lobbyMessage.innerText = "Your request to join was denied.";
+                    clearInterval(statusInterval); // Stop polling after denial
+                } else {
+                    lobbyMessage.innerText = "Your request is still pending.";
+                }
+            } else {
+                console.error("Error checking request status:", data.message);
+            }
+        } catch (error) {
+            console.error("Error:", error);
+        }
+    }
+
+    // Start polling every 5 seconds
+    let statusInterval;
+    function startPollingJoinStatus() {
+        statusInterval = setInterval(checkJoinRequestStatus, 5000);
+    }
+
+    // Helper function to get CSRF token
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    // Attach the handleSubmit function to the form's submit event.
+    form.addEventListener('submit', handleSubmit);
+    
 </script>
 
 {% endblock content %}

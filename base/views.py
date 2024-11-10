@@ -1,10 +1,11 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
 from agora_token_builder import RtcTokenBuilder
 import random
 import time
 import json
-from .models import RoomMember, RoomToken
+from .models import RoomMember, Room, RoomRequest
+
 from django.views.decorators.csrf import csrf_exempt
 
 from django.urls import reverse_lazy
@@ -82,17 +83,17 @@ def getToken(request):
     # Check if the room already exists only if the user is hosting
     if action_type == 'host':
         # Query the database to check if a room with the given channel name already exists.
-        existing_token = RoomToken.objects.filter(room_name=channelName).first()
+        existing_room = Room.objects.filter(room_name=channelName).first()
         # If the room already exists, return an error response.
-        if existing_token:
+        if existing_room:
             return JsonResponse({'error': 'Room already exists'}, status=400)
 
     # Check if the room exists when the user is trying to join.   
     elif action_type == 'join':
         # Query the database to check if a room exists
-        existing_token = RoomToken.objects.filter(room_name=channelName).first()
+        existing_room = Room.objects.filter(room_name=channelName).first()
         # If the room does not exist, return an error response.
-        if not existing_token:
+        if not existing_room:
             return JsonResponse({'error': 'Room does not exist'}, status=404)
         
     # Generate a random UID (User ID) between 1 and 230.
@@ -108,9 +109,13 @@ def getToken(request):
     # Build the Agora RTC token using the UID and other details.
     token = RtcTokenBuilder.buildTokenWithUid(appId, appCertificate, channelName, uid, role, privilegeExpiredTs)
 
-    # If the user is hosting, create a new RoomToken entry in the database.
+    # If the user is hosting, create a new Room entry in the database.
     if action_type == 'host':
-        RoomToken.objects.create(room_name=channelName, token=token, uid=uid)
+        # Create the room object
+        room = Room.objects.create(room_name=channelName, current_host=request.user, token=token, uid=uid)
+
+        # Add the host as the first participant
+        room.participants.add(request.user)
     
     # Return the generated token and UID as a JSON response.
     return JsonResponse({'token': token, 'uid': uid}, safe=False)
@@ -173,22 +178,172 @@ def getMember(request):
 def deleteMember(request):
     data = json.loads(request.body)  # Load JSON data from the request body.
     
-    # Find the RoomMember entry based on the user's name, UID, and room name.
-    member = RoomMember.objects.get(
-        name=data['name'],
-        uid=data['UID'],
-        room_name=data['room_name'],
-    )
+    try:
+        # Find the RoomMember entry based on the user's name, UID, and room name
+        member = RoomMember.objects.get(
+            name=data['name'],
+            uid=data['UID'],
+            room_name=data['room_name'],
+        )
 
-    # Delete the RoomMember entry.
-    member.delete()
+        # Delete the RoomMember entry
+        member.delete()
+        
+        # Find the Room entry for the specified room
+        room = Room.objects.get(room_name=data['room_name'])
+        
+        # Remove the user from the participants list
+        room.participants.remove(request.user)
 
-    # Check if there are any members remaining in the room.
-    remaining_members = RoomMember.objects.filter(room_name=data['room_name']).exists()
+        # Check if there are any members remaining in the room
+        remaining_members = RoomMember.objects.filter(room_name=data['room_name']).exists()
+
+        # If the leaving member is the host, set the current_host field to null
+        if room.current_host == request.user:
+            room.current_host = None
+            room.save()
+
+        # If no members remain in the room, delete the Room entry
+        if not remaining_members:
+            room.delete()
+
+        # Return a confirmation message as a JSON response
+        return JsonResponse('Member was deleted', safe=False)
+
+    except RoomMember.DoesNotExist:
+        return JsonResponse({'error': 'Member not found'}, status=404)
+    except Room.DoesNotExist:
+        return JsonResponse({'error': 'Room not found'}, status=404)
+
+
+# Endpoint for handling join requests
+def handle_join_request(request, room_name):
+    # Ensure the request method is POST
+    if request.method != "POST":
+        return JsonResponse({"error": "Only POST requests are allowed"}, status=405)
     
-    # If no members remain in the room, delete the RoomToken entry.
-    if not remaining_members:
-        RoomToken.objects.filter(room_name=data['room_name']).delete()
+    # Get the room object
+    room = get_object_or_404(Room, room_name=room_name)
+    user = request.user
     
-    # Return a confirmation message as a JSON response.
-    return JsonResponse('Member was deleted', safe=False)
+    # Check if the room has a host
+    if room.current_host:
+        # Check if there is an existing pending request for this user in the room
+        room_request, created = RoomRequest.objects.get_or_create(
+            room=room,
+            user=user,
+            defaults={'status': 'pending'}
+        )
+        
+        if not created and room_request.status == 'pending':
+            # If a request is already pending, return the existing pending status
+            return JsonResponse({"status": "pending_approval", "message": "Already waiting for host approval"}, status=403)
+        
+        # Set the request status to 'pending' and save it
+        room_request.status = 'pending'
+        room_request.save()
+        
+        # Notify the host here 
+        return JsonResponse({"status": "pending_approval", "message": "Waiting for host approval"}, status=403)
+    
+    # If no host exists, allow the user to join automatically without any RoomRequest
+    room.participants.add(user)
+    return JsonResponse({"status": "approved", "message": "User approved to join the room"})
+
+
+def check_pending_requests(request, room_name):
+    try:
+        # Retrieve the room by name
+        room = Room.objects.get(room_name=room_name)
+        
+        # Check if the requesting user is the host
+        is_host = request.user == room.current_host
+
+        # Get the pending requests for this room
+        pending_requests = RoomRequest.objects.filter(room=room, status='pending')
+        
+        # Serialize the data
+        requests_data = [{"name": req.user.username, "user_id": req.id} for req in pending_requests]
+
+        return JsonResponse({"status": "success", "pending_requests": requests_data, "is_host": is_host})
+    
+    except Room.DoesNotExist:
+        return JsonResponse({"status": "error", "message": "Room not found"})
+    except Exception as e:
+        return JsonResponse({"status": "error", "message": str(e)})
+
+
+def approve_join_request(request, room_name, request_id):
+    try:
+        # Fetch the room and request
+        room = get_object_or_404(Room, room_name=room_name)  # Get room based on room_name
+        join_request = get_object_or_404(RoomRequest, id=request_id, room=room)
+
+        # Parse the JSON body to get the 'approve' flag
+        data = json.loads(request.body)
+        approve = data.get("approve", False)
+
+        if approve:
+            # Approve the request
+            join_request.status = 'approved'
+            join_request.save()
+            # Add the user to the room participants
+            room.participants.add(join_request.user)
+            message = "Request approved, user added to room."
+        else:
+            # Deny the request
+            join_request.status = 'denied'
+            join_request.save()
+            message = "Request denied."
+
+        # Return a response indicating success
+        return JsonResponse({
+            "status": "success",
+            "message": message
+        })
+
+    except Room.DoesNotExist:
+        return JsonResponse({"status": "error", "message": "Room not found"})
+    except RoomRequest.DoesNotExist:
+        return JsonResponse({"status": "error", "message": "Join request not found"})
+    except Exception as e:
+        return JsonResponse({"status": "error", "message": str(e)})
+
+
+def check_join_request_status(request, room_name, user_id):
+    try:
+        # Fetch the room and request
+        room = get_object_or_404(Room, room_name=room_name)  # Get room based on room_name
+        join_request = get_object_or_404(RoomRequest, user_id=user_id, room=room)
+
+        # Check the status of the join request
+        if join_request.status == 'approved':
+            # If the request is approved, indicate the user can proceed to the room
+            return JsonResponse({
+                "status": "success",
+                "join_status": "approved",
+                "redirect_url": "/room/",  # Include the redirect URL here
+                "message": "Your request to join has been approved!"
+            })
+
+        elif join_request.status == 'denied':
+            # If the request is denied, inform the user
+            return JsonResponse({
+                "status": "success",
+                "join_status": "denied",
+                "message": "Your request to join was denied."
+            })
+
+        else:
+            # If the request is still pending
+            return JsonResponse({
+                "status": "success",
+                "join_status": "pending",
+                "message": "Your request is still pending."
+            })
+    
+    except RoomRequest.DoesNotExist:
+        return JsonResponse({
+            "status": "error",
+            "message": "Join request not found."
+        }, status=404)

@@ -2,7 +2,17 @@
 {% load static %}
 
 {% block content %}
+
 <main class="room-container">
+
+    <!-- Popup for Host to approve/deny joining users -->
+    <div id="approval-popup" class="hidden" style="text-align: center;">
+        <div>
+            <h3 style="color: white;">Users are requesting to join the room.</h3>
+            <div id="request-list"></div>
+        </div>
+    </div>
+
     <section id="room-name-wrapper" style="margin: 1em;">
         <p style="color: white;">Room: <span id="room-name"></span></p>
     </section>
@@ -10,7 +20,7 @@
     <section id="video-streams"></section>
 
     <section id="controls-wrapper">
-        
+
         <div class="icon-wrapper">
             <img class="control-icon" id="mic-btn" src="{% static 'images/microphone.svg' %}" />
         </div>
@@ -28,4 +38,106 @@
 
 <script type="text/javascript" src="{% static 'assets/AgoraRTC_N-4.22.1.js' %}"></script>
 <script type="text/javascript" src="{% static 'js/streams.js' %}"></script>
+
+<script>
+    const approvalPopup = document.getElementById("approval-popup");
+    const requestList = document.getElementById("request-list");
+    const roomNameElement = document.getElementById("room-name"); // Accessing the span with room name
+
+    let isHost = true;  // Variable to store if the user is the host
+
+    // Show popup if user is host and there are pending requests
+    async function checkPendingRequests() {
+        const roomName = roomNameElement.innerText;  // Get the room name from the span element
+        try {
+            // Fetch pending requests for the room
+            const response = await fetch(`/check_pending_requests/${roomName}/`);
+            const data = await response.json();
+
+            // If the user is the host, set isHost to true
+            if (data.is_host) {
+                isHost = true;
+            }
+            else {
+                isHost = false
+            }
+
+            if (data.status === "success") {
+                const pendingRequests = data.pending_requests;
+                if (pendingRequests.length > 0) {
+                    // Display the popup if there are pending requests
+                    requestList.innerHTML = "";  // Clear previous requests
+                    pendingRequests.forEach(request => {
+
+                        // Create elements for each request
+                        const requestItem = document.createElement("div");
+                        requestItem.classList.add("request-item");
+                        requestItem.innerHTML = `
+                            <h3 style="color: white;">User: ${request.name}</h3>
+                            <button onclick="respondToJoinRequest('${request.user_id}', true)">Approve</button>
+                            <button onclick="respondToJoinRequest('${request.user_id}', false)">Deny</button>
+                        `;
+                        requestList.appendChild(requestItem);
+                    });
+                    approvalPopup.classList.remove("hidden");  // Show the popup
+                } else {
+                    approvalPopup.classList.add("hidden");  // Hide the popup if no requests
+                }
+            } else {
+                console.log("Error checking pending requests: " + data.message);
+            }
+        } catch (error) {
+            console.error("Error:", error);
+        }
+    }
+
+    // Respond to a join request (approve/deny)
+    async function respondToJoinRequest(userId, approve) {
+        const roomName = roomNameElement.innerText;  // Get the room name again when responding
+
+        try {
+            const response = await fetch(`/approve_join_request/${roomName}/${userId}/`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": getCookie('csrftoken')
+                },
+                body: JSON.stringify({ user_id: userId, approve })
+            });
+            const data = await response.json();
+            console.log(data.message);
+            // Refresh the pending requests after response
+            checkPendingRequests();
+        } catch (error) {
+            console.error("Error responding to join request:", error);
+        }
+    }
+
+    // Helper function to get CSRF token
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+
+    // Poll for pending requests every 3 seconds, but only if the user is the host
+    setInterval(() => {
+        if (isHost) {
+            checkPendingRequests();  // Poll for pending requests if the user is host
+        }
+    }, 3000);
+
+</script>
+
+
 {% endblock content %}
