@@ -3,21 +3,25 @@
 {% block content %}
 
 <main class="signup-container">
-
+    <!-- Main section for the signup page -->
     <section id="form-container">
+        <!-- Section containing the sign-up form -->
 
         <div id="welcome-message">
-            <h1>Sign Up</h1>
+            <h1>Sign Up</h1>  <!-- Displaying the title of the page -->
         </div>
 
+        <!-- Form for user registration -->
         <form id="form" method="POST">
-            {% csrf_token %}
-            <div>
+            {% csrf_token %}  <!-- CSRF protection token to prevent cross-site request forgery attacks -->
 
+            <div>
+                <!-- Username Field -->
                 <div class="form-field">
                     <label for="username">Username:</label>
-                    {{ form.username }}
+                    {{ form.username }}  <!-- Render the username field from the form -->
 
+                    <!-- Displaying errors for the username field -->
                     {% if form.username.errors %}
                     <div style="color: red; margin-top: 5px; font-weight: bold;">
                         {% for error in form.username.errors %}
@@ -25,13 +29,14 @@
                         {% endfor %}
                     </div>
                     {% endif %}
-
                 </div>
 
+                <!-- Password Field -->
                 <div class="form-field">
                     <label for="password1">Password:</label>
-                    {{ form.password1 }}
+                    {{ form.password1 }}  <!-- Render the password1 field from the form -->
 
+                    <!-- Displaying errors for the password field -->
                     {% if form.password1.errors %}
                     <div style="color: red; margin-top: 5px; font-weight: bold;">
                         {% for error in form.password1.errors %}
@@ -39,13 +44,14 @@
                         {% endfor %}
                     </div>
                     {% endif %}
-
                 </div>
 
+                <!-- Confirm Password Field -->
                 <div class="form-field">
                     <label for="password2">Confirm Password:</label>
-                    {{ form.password2 }}
+                    {{ form.password2 }}  <!-- Render the password2 field from the form -->
 
+                    <!-- Displaying errors for the password confirmation field -->
                     {% if form.password2.errors %}
                     <div style="color: red; margin-top: 5px; font-weight: bold;">
                         {% for error in form.password2.errors %}
@@ -53,13 +59,14 @@
                         {% endfor %}
                     </div>
                     {% endif %}
-
                 </div>
 
+                <!-- Submit Button -->
                 <div class="form-field">
-                    <input type="submit" value="Sign Up" />
+                    <input type="submit" value="Sign Up" />  <!-- Button to submit the form -->
                 </div>
 
+                <!-- Displaying non-field errors (errors not associated with a specific field) -->
                 {% if form.non_field_errors %}
                 <div style="color: red; margin-bottom: 15px; text-align: center; font-weight: bold;">
                     {% for error in form.non_field_errors %}
@@ -67,11 +74,13 @@
                     {% endfor %}
                 </div>
                 {% endif %}
-
             </div>
         </form>
 
-        <p style="text-align: center;">Already have an account? <a href="{% url 'login' %}" style="text-decoration: none; font-weight: bold; color: blueviolet;">Login</a></p>
+        <!-- Link to login page for users who already have an account -->
+        <p style="text-align: center;">Already have an account? 
+            <a href="{% url 'login' %}" style="text-decoration: none; font-weight: bold; color: blueviolet;">Login</a>
+        </p>
     </section>
 </main>
 

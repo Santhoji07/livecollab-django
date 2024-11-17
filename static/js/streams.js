@@ -1,3 +1,4 @@
+// Define the App ID for Agora
 const APP_ID = '351d9881f5d3413ba18e08949844fddb'
 // Get the channel name and token from the session storage.
 const CHANNEL = sessionStorage.getItem('room')

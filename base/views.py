@@ -16,152 +16,134 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import login
 
 
+# View for the homepage (render the 'home.html' template).
 def home(request):
     return render(request, 'base/home.html') 
 
+# View for the About Us page (render the 'about.html' template).
 def about(request):
     return render(request, 'base/about.html')
 
+# View for the Contact Us page (render the 'contact.html' template).
 def contact(request):
     return render(request, 'base/contact.html')
 
-# View to handle user login with a custom template and redirection for authenticated users.
+# Custom view for handling user login.
+# Uses a custom template and redirects authenticated users away from the login page.
 class CustomLoginView(LoginView):
-     # Specify the template to be used for the login page
-    template_name = 'base/login.html'
-    # Allow all fields to be included in the form (note: this is usually not recommended for security reasons)
-    fields = '__all__'
-    # Redirect authenticated users to another page instead of showing the login page
-    redirect_authenticated_user = True
+    template_name = 'base/login.html'  # Specify the custom login page template
+    fields = '__all__'  # Allows all fields in the form (usually not recommended for security).
+    redirect_authenticated_user = True  # If the user is already logged in, redirect them to home.
 
+    # If login is successful, redirect to the 'home' page.
     def get_success_url(self):
-        # Redirect to the 'home' URL upon successful login
         return reverse_lazy('home')
-     
 
-# View to handle user sign-up, including account creation and automatic login upon successful registration.
+
+# View for handling user sign-up, including account creation and automatic login.
 class SignUp(FormView):
-    # Specify the template to be used for the sign-up page
-    template_name = 'base/signup.html'
-    # Use the UserCreationForm for signing up new users
-    form_class = UserCreationForm
-    # Redirect authenticated users to another page instead of showing the sign-up page
-    redirect_authenticated_user = True
-    # Specify the URL to redirect to upon successful form submission
-    success_url = reverse_lazy('home')
+    template_name = 'base/signup.html'  # Specify the template for the sign-up page.
+    form_class = UserCreationForm  # Use the built-in Django UserCreationForm for new users.
+    redirect_authenticated_user = True  # Redirect authenticated users to the home page.
+    success_url = reverse_lazy('home')  # Redirect to home after successful sign-up.
 
+    # Custom behavior when the form is successfully validated:
     def form_valid(self, form):
-        # Save the user and log them in if the form is valid
-        user = form.save()
+        user = form.save()  # Save the new user.
         if user is not None:
-            login(self.request, user)  # Log in the newly created user
-        return super(SignUp, self).form_valid(form)  # Proceed with the usual form validation flow
+            login(self.request, user)  # Log the user in immediately after signing up.
+        return super(SignUp, self).form_valid(form)  # Proceed with usual form handling.
     
+    # Check if the user is already authenticated. If so, redirect to the home page.
     def get(self, *args, **kwargs):
-        # Check if the user is already authenticated
         if self.request.user.is_authenticated:
-            # Redirect authenticated users to the 'home'
-            return redirect('home')
-        
-        return super(SignUp, self).get(*args, **kwargs)  # Otherwise, render the sign-up page
+            return redirect('home')  # Redirect to home if the user is already logged in.
+        return super(SignUp, self).get(*args, **kwargs)  # Otherwise, render the sign-up page.
 
 
-# Ensure that the user is logged in before accessing the decorated view
+# View to generate an Agora RTC token for room participation or creation.
+# This view is only accessible to authenticated users.
 @login_required(login_url='/login/')
-# View to generate an Agora RTC token.
 def getToken(request):
-    # Agora app credentials (replace with actual credentials for production use).
+    # Agora app credentials (these are placeholder values, should be replaced with actual ones).
     appId = '351d9881f5d3413ba18e08949844fddb'
     appCertificate = '8061ce92be7f4e8caea5650c67ddc7ce'
     
-    # Get the channel name from the request.
+    # Get the channel name (room) and action type (host/join) from the request.
     channelName = request.GET.get('channel')
-
-    # Get action type (host/join)
     action_type = request.GET.get('actionType')
 
-    # Check if the room already exists only if the user is hosting
+    # If the user is hosting, check if a room with the given channel name already exists.
     if action_type == 'host':
-        # Query the database to check if a room with the given channel name already exists.
         existing_room = Room.objects.filter(room_name=channelName).first()
-        # If the room already exists, return an error response.
         if existing_room:
-            return JsonResponse({'error': 'Room already exists'}, status=400)
+            return JsonResponse({'error': 'Room already exists'}, status=400)  # Return error if the room exists.
 
-    # Check if the room exists when the user is trying to join.   
+    # If the user is joining, ensure the room exists.
     elif action_type == 'join':
-        # Query the database to check if a room exists
         existing_room = Room.objects.filter(room_name=channelName).first()
-        # If the room does not exist, return an error response.
         if not existing_room:
-            return JsonResponse({'error': 'Room does not exist'}, status=404)
-        
-    # Generate a random UID (User ID) between 1 and 230.
+            return JsonResponse({'error': 'Room does not exist'}, status=404)  # Return error if the room does not exist.
+    
+    # Generate a random UID between 1 and 230 (to simulate user identity in Agora).
     uid = random.randint(1, 230)
     
-    # Set the token expiration time to 24 hours (3600 seconds * 24).
+    # Set the expiration time of the token to 24 hours.
     expirationTimeInSeconds = 3600 * 24
-    currentTimeStamp = time.time()  # Get current timestamp.
-    privilegeExpiredTs = currentTimeStamp + expirationTimeInSeconds  # Set the privilege expiration timestamp.
+    currentTimeStamp = time.time()
+    privilegeExpiredTs = currentTimeStamp + expirationTimeInSeconds  # Calculate the expiration timestamp.
     
-    role = 1  # Define the role (1 means broadcaster).
-    
-    # Build the Agora RTC token using the UID and other details.
+    role = 1  # Assign a role of 1 for the broadcaster (host).
+
+    # Build the Agora RTC token using the credentials, UID, and channel information.
     token = RtcTokenBuilder.buildTokenWithUid(appId, appCertificate, channelName, uid, role, privilegeExpiredTs)
 
-    # If the user is hosting, create a new Room entry in the database.
+    # If the user is hosting, create a new room entry in the database.
     if action_type == 'host':
-        # Create the room object
         room = Room.objects.create(room_name=channelName, current_host=request.user, token=token, uid=uid)
-
-        # Add the host as the first participant
-        room.participants.add(request.user)
+        room.participants.add(request.user)  # Add the host as the first participant in the room.
     
     # Return the generated token and UID as a JSON response.
     return JsonResponse({'token': token, 'uid': uid}, safe=False)
 
 
-# Ensure that the user is logged in before accessing the decorated view
+# View to render the lobby page, accessible only by logged-in users.
 @login_required(login_url='/login/')
-# View to render the lobby page.
 def lobby(request):
-    action_type = request.GET.get('actionType', 'join')  # Default to 'join' if not specified
+    action_type = request.GET.get('actionType', 'join')  # Default action is 'join' if not specified.
     return render(request, 'base/lobby.html', {'action_type': action_type})
 
 
-# Ensure that the user is logged in before accessing the decorated view
+# View to render the room page, accessible only by logged-in users.
 @login_required(login_url='/login/')
-# View to render the room page.
 def room(request):
     return render(request, 'base/room.html')
 
 
-# Ensure that the user is logged in before accessing the decorated view
+# View to create a new RoomMember entry in the database. Exempt from CSRF protection.
+@csrf_exempt
 @login_required(login_url='/login/')
-# View to create a new RoomMember entry in the database.
-@csrf_exempt  # Exempt from CSRF protection since the request method is POST and coming from JavaScript.
 def createMember(request):
-    data = json.loads(request.body)  # Load JSON data from the request body.
+    data = json.loads(request.body)  # Parse the JSON data from the request body.
     
-    # Get or create a new RoomMember entry based on the user's name, UID, and room name.
+    # Create or get a RoomMember entry based on the user's name, UID, and room name.
     member, created = RoomMember.objects.get_or_create(
-        name=data['name'],  # Member's name.
-        uid=data['UID'],    # User's unique identifier (UID).
-        room_name=data['room_name']  # Room name.
+        name=data['name'],
+        uid=data['UID'],
+        room_name=data['room_name']
     )
 
-    # Return the user's name in a JSON response.
+    # Return the member's name as a JSON response.
     return JsonResponse({'name': data['name']}, safe=False)
 
 
-# Ensure that the user is logged in before accessing the decorated view
-@login_required(login_url='/login/')
 # View to fetch a RoomMember's information based on UID and room name.
+@login_required(login_url='/login/')
 def getMember(request):
-    uid = request.GET.get('UID')  # Get the UID from the query parameters.
-    room_name = request.GET.get('room_name')  # Get the room name from the query parameters.
+    uid = request.GET.get('UID')  # Get UID from request query parameters.
+    room_name = request.GET.get('room_name')  # Get room name from request query parameters.
 
-    # Find the RoomMember entry that matches the UID and room name.
+    # Find the member from the database using the provided UID and room name.
     member = RoomMember.objects.get(
         uid=uid,
         room_name=room_name,
@@ -171,100 +153,98 @@ def getMember(request):
     return JsonResponse({'name': member.name}, safe=False)
 
 
-# Ensure that the user is logged in before accessing the decorated view
+# View to delete a RoomMember entry from the database. Exempt from CSRF protection.
+@csrf_exempt
 @login_required(login_url='/login/')
-# View to delete a RoomMember entry from the database.
-@csrf_exempt  # Exempt from CSRF protection since this is a DELETE request from JavaScript.
 def deleteMember(request):
-    data = json.loads(request.body)  # Load JSON data from the request body.
+    data = json.loads(request.body)  # Parse the request body as JSON.
     
     try:
-        # Find the RoomMember entry based on the user's name, UID, and room name
+        # Find the RoomMember entry based on the user's name, UID, and room name.
         member = RoomMember.objects.get(
             name=data['name'],
             uid=data['UID'],
             room_name=data['room_name'],
         )
 
-        # Delete the RoomMember entry
+        # Delete the RoomMember entry.
         member.delete()
-        
-        # Find the Room entry for the specified room
+
+        # Find the Room entry associated with the specified room name.
         room = Room.objects.get(room_name=data['room_name'])
         
-        # Remove the user from the participants list
+        # Remove the user from the participants list of the room.
         room.participants.remove(request.user)
 
-        # Check if there are any members remaining in the room
-        remaining_members = RoomMember.objects.filter(room_name=data['room_name']).exists()
-
-        # If the leaving member is the host, set the current_host field to null
+        # If the leaving member was the host, set the room's host to None.
         if room.current_host == request.user:
             room.current_host = None
             room.save()
 
-        # If no members remain in the room, delete the Room entry
-        if not remaining_members:
+        # If no members remain in the room, delete the room entry from the database.
+        if not RoomMember.objects.filter(room_name=data['room_name']).exists():
             room.delete()
 
-        # Return a confirmation message as a JSON response
+        # Return a confirmation message as a JSON response.
         return JsonResponse('Member was deleted', safe=False)
 
     except RoomMember.DoesNotExist:
-        return JsonResponse({'error': 'Member not found'}, status=404)
+        return JsonResponse({'error': 'Member not found'}, status=404)  # Return error if the member is not found.
     except Room.DoesNotExist:
-        return JsonResponse({'error': 'Room not found'}, status=404)
+        return JsonResponse({'error': 'Room not found'}, status=404)  # Return error if the room is not found.
 
 
 # Endpoint for handling join requests
 def handle_join_request(request, room_name):
-    # Ensure the request method is POST
+    # Ensure the request method is POST, since only POST requests are allowed here
     if request.method != "POST":
         return JsonResponse({"error": "Only POST requests are allowed"}, status=405)
     
-    # Get the room object
+    # Get the room object based on the room_name provided in the URL
     room = get_object_or_404(Room, room_name=room_name)
     user = request.user
     
     # Check if the room has a host
     if room.current_host:
-        # Check if there is an existing pending request for this user in the room
+        # Check if there is an existing pending request for this user to join the room
         room_request, created = RoomRequest.objects.get_or_create(
             room=room,
             user=user,
             defaults={'status': 'pending'}
         )
         
+        # If there is already a pending request, inform the user that they're waiting for approval
         if not created and room_request.status == 'pending':
-            # If a request is already pending, return the existing pending status
             return JsonResponse({"status": "pending_approval", "message": "Already waiting for host approval"}, status=403)
         
-        # Set the request status to 'pending' and save it
+        # Otherwise, set the request status to 'pending' and save the request
         room_request.status = 'pending'
         room_request.save()
         
-        # Notify the host here 
+        # Inform the user that they are waiting for host approval
         return JsonResponse({"status": "pending_approval", "message": "Waiting for host approval"}, status=403)
     
-    # If no host exists, allow the user to join automatically without any RoomRequest
+    # If no host exists, automatically approve the user to join the room
     room.participants.add(user)
     return JsonResponse({"status": "approved", "message": "User approved to join the room"})
 
 
+# Endpoint to check all pending join requests for a room
 def check_pending_requests(request, room_name):
     try:
-        # Retrieve the room by name
+        # Retrieve the room based on its name
         room = Room.objects.get(room_name=room_name)
         
         # Check if the requesting user is the host
         is_host = request.user == room.current_host
 
-        # Get the pending requests for this room
+        # Get all pending requests for the room
         pending_requests = RoomRequest.objects.filter(room=room, status='pending')
         
-        # Serialize the data
+        # Prepare the data for the pending requests
         requests_data = [{"name": req.user.username, "user_id": req.id} for req in pending_requests]
 
+        # Return the list of pending requests along with whether the user is the host
         return JsonResponse({"status": "success", "pending_requests": requests_data, "is_host": is_host})
     
     except Room.DoesNotExist:
@@ -273,30 +253,30 @@ def check_pending_requests(request, room_name):
         return JsonResponse({"status": "error", "message": str(e)})
 
 
+# Endpoint for the host to approve or deny a join request
 def approve_join_request(request, room_name, request_id):
     try:
-        # Fetch the room and request
-        room = get_object_or_404(Room, room_name=room_name)  # Get room based on room_name
+        # Fetch the room and the join request based on the room_name and request_id
+        room = get_object_or_404(Room, room_name=room_name)
         join_request = get_object_or_404(RoomRequest, id=request_id, room=room)
 
-        # Parse the JSON body to get the 'approve' flag
+        # Parse the JSON body to check if the request should be approved or denied
         data = json.loads(request.body)
         approve = data.get("approve", False)
 
         if approve:
-            # Approve the request
+            # If approved, change the status of the request and add the user to the room
             join_request.status = 'approved'
             join_request.save()
-            # Add the user to the room participants
             room.participants.add(join_request.user)
             message = "Request approved, user added to room."
         else:
-            # Deny the request
+            # If denied, change the request status to 'denied'
             join_request.status = 'denied'
             join_request.save()
             message = "Request denied."
 
-        # Return a response indicating success
+        # Return a success message indicating the decision
         return JsonResponse({
             "status": "success",
             "message": message
@@ -310,24 +290,25 @@ def approve_join_request(request, room_name, request_id):
         return JsonResponse({"status": "error", "message": str(e)})
 
 
+# Endpoint to check the status of a user's join request
 def check_join_request_status(request, room_name, user_id):
     try:
-        # Fetch the room and request
-        room = get_object_or_404(Room, room_name=room_name)  # Get room based on room_name
+        # Fetch the room and the join request for the user
+        room = get_object_or_404(Room, room_name=room_name)
         join_request = get_object_or_404(RoomRequest, user_id=user_id, room=room)
 
-        # Check the status of the join request
+        # Check the current status of the join request and return an appropriate response
         if join_request.status == 'approved':
-            # If the request is approved, indicate the user can proceed to the room
+            # If approved, provide the user with the ability to proceed to the room
             return JsonResponse({
                 "status": "success",
                 "join_status": "approved",
-                "redirect_url": "/room/",  # Include the redirect URL here
+                "redirect_url": "/room/",  # Provide a link to the room
                 "message": "Your request to join has been approved!"
             })
 
         elif join_request.status == 'denied':
-            # If the request is denied, inform the user
+            # If denied, inform the user that their request was rejected
             return JsonResponse({
                 "status": "success",
                 "join_status": "denied",
@@ -335,7 +316,7 @@ def check_join_request_status(request, room_name, user_id):
             })
 
         else:
-            # If the request is still pending
+            # If still pending, inform the user that their request is waiting for approval
             return JsonResponse({
                 "status": "success",
                 "join_status": "pending",
@@ -353,15 +334,16 @@ def check_join_request_status(request, room_name, user_id):
 @login_required(login_url='/login/')
 def get_participants(request, room_name):
     try:
-        # Fetch the room by name
+        # Fetch the room by its name
         room = Room.objects.get(room_name=room_name)
 
-        # Get all participants in the room
+        # Get all participants of the room
         participants = room.participants.all()
 
-        # Serialize participant usernames
+        # Prepare the data for all participants
         participants_data = [{"username": participant.username} for participant in participants]
 
+        # Return the list of participants
         return JsonResponse({"status": "success", "participants": participants_data})
 
     except Room.DoesNotExist:

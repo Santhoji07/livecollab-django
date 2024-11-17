@@ -2,27 +2,28 @@
 {% load static %}
 
 {% block content %}
-
 <main class="room-container">
 
     <!-- Popup for Host to approve/deny joining users -->
     <div id="approval-popup" class="popup hidden">
         <div class="popup-header">
+            <!-- Warning icon and title for the popup -->
             <img src="{% static 'images/warning-icon.png' %}" alt="Warning Icon" class="popup-icon">
             <h3>Confirm Member Join</h3>
-            <div id="request-list"></div>
+            <div id="request-list"></div> <!-- List of requests will be inserted here -->
         </div>
     </div>
 
-
+    <!-- Room name display -->
     <section id="room-name-wrapper" style="margin: 1em;">
         <p style="color: white;">Room: <span id="room-name"></span></p>
     </section>
 
+    <!-- Video streams section (where the video feeds will be displayed) -->
     <section id="video-streams"></section>
 
+    <!-- Controls for microphone, camera, and leaving the room -->
     <section id="controls-wrapper">
-
         <div class="icon-wrapper">
             <img class="control-icon" id="mic-btn" src="{% static 'images/microphone.svg' %}" />
         </div>
@@ -34,78 +35,78 @@
         <div class="icon-wrapper">
             <img class="control-icon" id="leave-btn" src="{% static 'images/leave.svg' %}" />
         </div>
-
     </section>
 
-    <!-- Button to open the side panel -->
+    <!-- Button to open the side panel for participants -->
     <button id="open-panel-btn" class="open-panel-btn">
         <img src="{% static 'images/group.png' %}">
     </button>
 
-    <!-- Side Panel with current participants -->
+    <!-- Side Panel displaying the list of participants -->
     <div id="side-panel" class="side-panel hidden">
         <div id="panel-header">
             <h2>Participants</h2>
             <button id="close-panel-btn" class="close-panel-btn">X</button>
         </div>
         <div id="participants-list" class="participants-list">
-            <!-- Participants will be listed here -->
+            <!-- Participants will be listed here dynamically -->
         </div>
     </div>
 
 </main>
 
+<!-- Loading AgoraRTC library -->
 <script type="text/javascript" src="{% static 'assets/AgoraRTC_N-4.22.1.js' %}"></script>
+<!-- Loading custom script for managing video streams -->
 <script type="text/javascript" src="{% static 'js/streams.js' %}"></script>
 
 <script>
-    // Open the side panel
+    // Select elements for opening and closing the side panel
     const openPanelBtn = document.getElementById("open-panel-btn");
     const sidePanel = document.getElementById("side-panel");
     const closePanelBtn = document.getElementById("close-panel-btn");
 
+    // Open the side panel when the button is clicked
     openPanelBtn.addEventListener("click", () => {
-        sidePanel.classList.remove("hidden");
-        sidePanel.classList.add("visible");
+        sidePanel.classList.remove("hidden");  // Remove hidden class
+        sidePanel.classList.add("visible");    // Add visible class to show the panel
     });
 
-    // Close the side panel
+    // Close the side panel when the close button is clicked
     closePanelBtn.addEventListener("click", () => {
-        sidePanel.classList.remove("visible");
-        sidePanel.classList.add("hidden");
+        sidePanel.classList.remove("visible"); // Remove visible class
+        sidePanel.classList.add("hidden");     // Add hidden class to hide the panel
     });
 
-
+    // Select elements for the approval popup and the request list
     const approvalPopup = document.getElementById("approval-popup");
     const requestList = document.getElementById("request-list");
-    const roomNameElement = document.getElementById("room-name"); // Accessing the span with room name
+    const roomNameElement = document.getElementById("room-name");
 
-    let isHost = true;  // Variable to store if the user is the host
+    let isHost = true;  // Variable to store whether the user is the host
 
-    // Show popup if user is host and there are pending requests
+    // Function to check for pending join requests
     async function checkPendingRequests() {
         const roomName = roomNameElement.innerText;  // Get the room name from the span element
         try {
-            // Fetch pending requests for the room
+            // Fetch pending join requests from the server
             const response = await fetch(`/check_pending_requests/${roomName}/`);
             const data = await response.json();
 
-            // If the user is the host, set isHost to true
+            // Check if the user is the host
             if (data.is_host) {
                 isHost = true;
-            }
-            else {
-                isHost = false
+            } else {
+                isHost = false;
             }
 
+            // If there are pending requests, show the approval popup
             if (data.status === "success") {
                 const pendingRequests = data.pending_requests;
                 if (pendingRequests.length > 0) {
-                    // Display the popup if there are pending requests
-                    requestList.innerHTML = "";  // Clear previous requests
+                    requestList.innerHTML = "";  // Clear any previous requests
                     pendingRequests.forEach(request => {
-
-                        // Create elements for each request
+                        // Create HTML for each pending request
                         const requestItem = document.createElement("div");
                         requestItem.classList.add("request-item");
                         requestItem.innerHTML = `
@@ -129,30 +130,31 @@
         }
     }
 
-    // Respond to a join request (approve/deny)
+    // Function to respond to a join request (approve or deny)
     async function respondToJoinRequest(userId, approve) {
-        const roomName = roomNameElement.innerText;  // Get the room name again when responding
+        const roomName = roomNameElement.innerText;  // Get the room name when responding
 
         try {
+            // Send approval or denial response to the server
             const response = await fetch(`/approve_join_request/${roomName}/${userId}/`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    "X-CSRFToken": getCookie('csrftoken')
+                    "X-CSRFToken": getCookie('csrftoken')  // CSRF token for security
                 },
                 body: JSON.stringify({ user_id: userId, approve })
             });
             const data = await response.json();
             console.log(data.message);
 
-            // Refresh the pending requests after response
+            // Refresh the pending requests after responding
             checkPendingRequests();
         } catch (error) {
             console.error("Error responding to join request:", error);
         }
     }
 
-    // Helper function to get CSRF token
+    // Helper function to get the CSRF token from cookies (used for secure POST requests)
     function getCookie(name) {
         let cookieValue = null;
         if (document.cookie && document.cookie !== '') {
@@ -168,17 +170,16 @@
         return cookieValue;
     }
 
-
-    // Poll for pending requests every 3 seconds, but only if the user is the host
+    // Polling for pending requests every 3 seconds if the user is the host
     setInterval(() => {
         if (isHost) {
-            checkPendingRequests();  // Poll for pending requests if the user is host
+            checkPendingRequests();  // Only poll if the user is the host
         }
     }, 3000);
 
     // Function to fetch and update the list of participants in the room
     async function updateParticipants() {
-        const roomName = roomNameElement.innerText;  // Get the room name from the span element
+        const roomName = roomNameElement.innerText;  // Get the room name again
 
         try {
             // Fetch participants for the room
@@ -188,14 +189,14 @@
             if (data.status === "success") {
                 const participantsList = document.getElementById("participants-list");
 
-                // Clear the previous participant list
+                // Clear the previous list of participants
                 participantsList.innerHTML = "";
 
                 // Add each participant to the list
                 data.participants.forEach(participant => {
                     const participantItem = document.createElement("p");
                     participantItem.textContent = participant.username;
-                    participantItem.style.textTransform = "capitalize";  // Capitalize the username
+                    participantItem.style.textTransform = "capitalize";  // Capitalize usernames
                     participantsList.appendChild(participantItem);
                 });
             } else {
@@ -206,12 +207,11 @@
         }
     }
 
-    // Call the updateParticipants function to populate the participant list on page load
+    // Call the updateParticipants function on page load to populate the participants list
     updateParticipants();
 
-    // A polling mechanism to periodically update the participants list
-    setInterval(updateParticipants, 5000);  // Update every 5 seconds
+    // Periodically update the participants list every 5 seconds
+    setInterval(updateParticipants, 5000);
 </script>
-
 
 {% endblock content %}

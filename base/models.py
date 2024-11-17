@@ -31,5 +31,5 @@ class RoomRequest(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)  # Track when the request was made
 
     def __str__(self):
-        return f"Request from {self.user.username} for room {self.room.room_name} ({self.status})"
+        return f"Request from {self.user.username} for room {self.room.room_name} ({self.status})"  # Returns the username, room name and status when the object is printed or represented.
     

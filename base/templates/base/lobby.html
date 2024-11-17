@@ -6,6 +6,7 @@
 <main>
     <section id="form-container">
 
+        <!-- Welcome message with conditional display of username if authenticated -->
         <div id="welcome-message">
             <h1>
                 Hello
@@ -15,23 +16,27 @@
             </h1>
         </div>
 
+        <!-- Form for entering room details and interacting with the server -->
         <form id="form">
             <div class="field-wrapper">
 
+                <!-- Input field for room name (uppercase enforced) -->
                 <div class="form-field">
                     <label style="font-weight: bold;">Room:</label>
                     <input name="room" placeholder="Enter a room name" style="text-transform:uppercase" required />
 
-                    <!-- Error message container -->
+                    <!-- Error message container (hidden by default) -->
                     <div id="error-message" style="color: red; margin-top: 5px; font-weight: bold; display: none;">
                     </div>
                 </div>
 
+                <!-- Hidden input for username (auto-filled with the logged-in user's name) -->
                 <div class="form-field" hidden>
                     <label style="font-weight: bold;">Name:</label>
                     <input name="username" placeholder="Enter your name" value="{{ request.user | title }}" required />
                 </div>
 
+                <!-- Submit button with text based on `action_type` -->
                 <div class="form-field">
                     {% if action_type == 'host' %}
                     <input type="submit" value="Host Stream" />
@@ -43,8 +48,8 @@
             </div>
         </form>
 
-        <!-- Lobby message container -->
-        <div id="lobby-message" style="margin-top: 15px; font-weight: bold; color: red; text-align: center;"></div>
+        <!-- Container for displaying messages while waiting in the lobby -->
+        <div id="lobby-message" style="margin-top: 15px; font-weight: bold; color: gold; text-align: center;"></div>
 
     </section>
 </main>
@@ -53,89 +58,97 @@
     const form = document.getElementById('form');
     const errorMessage = document.getElementById('error-message');
     const lobbyMessage = document.getElementById('lobby-message');
-    const actionType = '{{ action_type }}';
-    let userId, roomName; // Declare globally to access them in polling function.
+    const actionType = '{{ action_type }}'; // Determines if the user is hosting or joining
+    let userId, roomName; // Variables for storing user and room info globally
 
-    // Handle form submission
+    // Handles form submission
     let handleSubmit = async (e) => {
-        e.preventDefault();
-        roomName = e.target.room.value.toUpperCase();
-        const name = e.target.username.value;
-        userId = "{{ request.user.id }}"; // Assuming user ID is available in the template context
+        e.preventDefault(); // Prevent default form behavior
+        roomName = e.target.room.value.toUpperCase(); // Get room name (uppercase)
+        const name = e.target.username.value; // Get username
+        userId = "{{ request.user.id }}"; // Get logged-in user's ID from the template context
 
+        // Hide and reset the error message
         errorMessage.style.display = 'none';
         errorMessage.textContent = '';
 
         try {
+            // Fetch token from the server for joining/hosting a room
             let response = await fetch(`/get_token/?channel=${roomName}&actionType=${actionType}`);
             if (response.status === 400 || response.status === 404) {
                 let errorData = await response.json();
-                errorMessage.textContent = errorData.error;
+                errorMessage.textContent = errorData.error; // Show error message if request fails
                 errorMessage.style.display = 'block';
                 return;
             }
 
             let data = await response.json();
-            let UID = data.uid;
-            let token = data.token;
+            let UID = data.uid; // User's unique ID
+            let token = data.token; // Token for accessing the room
 
+            // Store details in sessionStorage for later use
             sessionStorage.setItem('UID', UID);
             sessionStorage.setItem('token', token);
             sessionStorage.setItem('room', roomName);
             sessionStorage.setItem('name', name);
 
+            // Join or host the room based on `actionType`
             if (actionType === 'join') {
-                requestToJoinRoom(roomName, name, UID); // Pass name and UID to requestToJoinRoom
+                requestToJoinRoom(roomName, name, UID); // Request approval to join the room
             } else {
-                window.open('/room/', '_self');
+                window.open('/room/', '_self'); // Redirect to the room page
             }
         } catch (error) {
+            // Handle unexpected errors
             console.error('Error:', error);
             errorMessage.textContent = 'An unexpected error occurred. Please try again.';
             errorMessage.style.display = 'block';
         }
     };
 
-    // Request to join a room
+    // Sends a request to join a room
     async function requestToJoinRoom(room, name, uid) {
         try {
+            // Send POST request to the server with room join details
             const response = await fetch(`/join_room/${room}/`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    "X-CSRFToken": getCookie('csrftoken')
+                    "X-CSRFToken": getCookie('csrftoken') // Include CSRF token for security
                 },
-                body: JSON.stringify({ uid, name })
+                body: JSON.stringify({ uid, name }) // Send user info
             });
             const dataResponse = await response.json();
 
+            // Display appropriate messages based on server response
             if (dataResponse.status === "pending_approval") {
-                lobbyMessage.innerText = dataResponse.message;
-                // Start polling for approval status
-                startPollingJoinStatus();
+                lobbyMessage.innerText = dataResponse.message; // Notify about pending approval
+                startPollingJoinStatus(); // Start polling for join request status
             } else {
                 lobbyMessage.innerText = dataResponse.message;
-                window.open('/room/', '_self');
+                window.open('/room/', '_self'); // Redirect to room if approved
             }
         } catch (error) {
             console.error("Error requesting to join:", error);
         }
     }
 
-    // Polling function to check join request status
+    // Polling function to check the status of the join request
     async function checkJoinRequestStatus() {
         try {
+            // Fetch current status of the join request
             const response = await fetch(`/check_join_request_status/${roomName}/${userId}/`);
             const data = await response.json();
 
+            // Handle responses: approved, denied, or pending
             if (data.status === "success") {
                 if (data.join_status === 'approved') {
                     lobbyMessage.innerText = "Your request to join has been approved!";
-                    clearInterval(statusInterval); // Stop polling after approval
-                    window.open('/room/', '_self');
+                    clearInterval(statusInterval); // Stop polling
+                    window.open('/room/', '_self'); // Redirect to the room
                 } else if (data.join_status === 'denied') {
                     lobbyMessage.innerText = "Your request to join was denied.";
-                    clearInterval(statusInterval); // Stop polling after denial
+                    clearInterval(statusInterval); // Stop polling
                 } else {
                     lobbyMessage.innerText = "Your request is still pending.";
                 }
@@ -147,13 +160,13 @@
         }
     }
 
-    // Start polling every 5 seconds
+    // Starts polling the server every 5 seconds to check join request status
     let statusInterval;
     function startPollingJoinStatus() {
         statusInterval = setInterval(checkJoinRequestStatus, 5000);
     }
 
-    // Helper function to get CSRF token
+    // Helper function to get CSRF token from cookies
     function getCookie(name) {
         let cookieValue = null;
         if (document.cookie && document.cookie !== '') {
@@ -169,7 +182,7 @@
         return cookieValue;
     }
 
-    // Attach the handleSubmit function to the form's submit event.
+    // Attach the handleSubmit function to the form's submit event
     form.addEventListener('submit', handleSubmit);
     
 </script>

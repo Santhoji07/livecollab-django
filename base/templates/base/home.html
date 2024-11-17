@@ -3,10 +3,17 @@
 
 {% block content %}
 
+    <!-- Banner Section -->
     <section class="banner">
+        <!-- Glass overlay design element -->
         <div class="glass">
-            <h1>Virtual Collaboration Made Simple</h1>
-            <p>Join or host a high-quality virtual meeting with a single click. Connect with your team from anywhere, anytime.</p>
+            <h1>Virtual Collaboration Made Simple</h1> <!-- Main heading of the page -->
+            <p>
+                Join or host a high-quality virtual meeting with a single click. 
+                Connect with your team from anywhere, anytime.
+            </p> <!-- Short description of the platform's capabilities -->
+
+            <!-- Buttons to join or host a meeting -->
             <button onclick="joinMeeting()">Join a Meeting</button>
             <button onclick="hostMeeting()">Host a Meeting</button>
         </div>
@@ -14,11 +21,15 @@
 
     <script>
 
+        // Function to navigate the user to the lobby page for joining a meeting
         function joinMeeting() {
+            // Redirect to the lobby page with actionType=join (user is joining a meeting)
             window.location.href = "{% url 'lobby' %}?actionType=join"; 
         }
     
+        // Function to navigate the user to the lobby page for hosting a meeting
         function hostMeeting() {
+            // Redirect to the lobby page with actionType=host (user is hosting a meeting)
             window.location.href = "{% url 'lobby' %}?actionType=host"; 
         }
 

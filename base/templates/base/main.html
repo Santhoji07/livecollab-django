@@ -4,35 +4,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- <title>MyChat</title> -->
+    
+    <!-- Open Graph Meta Tags for social media sharing -->
+    <meta name="og:title" content="UnityHub"/>
+    <meta name="og:description" content="UnityHub - Seamless video collaboration for teams and individuals. Join or host meetings with ease."/>
+    <meta name="og:image" content="https://sumithshetty1.github.io/Meta-Open-Graph-Images/unityhub-logo.svg" />
+
+    <!-- Page Title -->
     <title>UnityHub</title>
-    <meta name="description" content="UnityHub - Seamless video collaboration for teams and individuals. Join or host meetings with ease.">
+
+    <!-- Link to external stylesheet (main.css) -->
     <link rel='stylesheet' type='text/css' media='screen' href="{% static 'styles/main.css' %}?v={{ STATIC_VERSION }}">
+
+    <!-- Link to favicon (UnityHub logo) -->
+    <link rel="icon" href="{% static 'images/unityhub-logo.svg' %}" type="image/x-icon">
+
     <style>
+        /* General Reset and Global Styles */
         * {
             margin: 0;
             padding: 0;
             font-family: Arial, sans-serif;
-            scroll-behavior: smooth;
+            scroll-behavior: smooth; /* Smooth scroll for anchor links */
         }
 
-        /* Banner Section */
+        /* Banner Section Styling */
         .banner {
-            width: 100vw;
-            height: 100vh;
-            background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url("{% static 'images/bg2.avif' %}");
+            width: 100vw; /* Full viewport width */
+            height: 100vh; /* Full viewport height */
+            background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url("{% static 'images/bg2.avif' %}"); /* Gradient overlay + background image */
             background-repeat: no-repeat;
             background-position: center;
-            background-size: cover;
+            background-size: cover; /* Ensures the background image covers the entire area */
             display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #ffffff;
+            align-items: center; /* Vertically center content */
+            justify-content: center; /* Horizontally center content */
+            color: #ffffff; /* White text color */
             text-align: center;
-            position: relative;
+            position: relative; /* To position pseudo-elements */
             overflow: hidden;
         }
 
+        /* Pseudo-element to add a blurred background overlay */
         .banner::before {
             content: '';
             position: absolute;
@@ -43,36 +56,40 @@
             background-image: url("{% static 'images/bg2.avif' %}");
             background-size: cover;
             background-position: center;
-            opacity: 0.2;
-            z-index: -1;
+            opacity: 0.2; /* Transparent background image for the overlay */
+            z-index: -1; /* Ensure the overlay is beneath the content */
         }
 
+        /* Glass Effect Styling */
         .glass {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.1); /* Semi-transparent background */
+            border-radius: 15px; /* Rounded corners */
             padding: 40px;
             max-width: 600px;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-            backdrop-filter: blur(8px);
-            animation: fadeIn 1.5s ease;
+            backdrop-filter: blur(8px); /* Blurring the background behind the glass */
+            animation: fadeIn 1.5s ease; /* Animation to fade in */
             box-sizing: border-box;
         }
 
+        /* Heading Styling */
         .glass h1 {
             font-size: 50px;
             margin-bottom: 20px;
-            animation: slideIn 1s ease;
+            animation: slideIn 1s ease; /* Slide-in animation for the heading */
             font-weight: 700;
         }
 
+        /* Paragraph Styling */
         .glass p {
             font-size: 18px;
             line-height: 1.6;
             margin-bottom: 20px;
-            animation: fadeInText 2s ease;
+            animation: fadeInText 2s ease; /* Fade-in animation for text */
             font-weight: 500;
         }
 
+        /* Button Styling */
         button {
             padding: 12px 30px;
             font-size: 18px;
@@ -82,13 +99,14 @@
             border-radius: 25px;
             margin: 10px;
             cursor: pointer;
-            transition: all 0.4s ease;
+            transition: all 0.4s ease; /* Smooth transition for hover effect */
             box-shadow: 0 4px 12px rgba(0, 10, 20, 0.2);
             position: relative;
             overflow: hidden;
             z-index: 2;
         }
 
+        /* Button Hover Effect (animation for color transition) */
         button::before {
             content: '';
             position: absolute;
@@ -101,13 +119,14 @@
         }
 
         button:hover::before {
-            left: 0;
+            left: 0; /* Reveal animation */
         }
 
         button:hover {
-            transform: scale(1.05);
+            transform: scale(1.05); /* Slight zoom effect on hover */
         }
 
+        /* Header Styling (Fixed Position) */
         header {
             position: fixed;
             top: 0;
@@ -116,17 +135,19 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background-color: rgba(0, 66, 130, 0.8);;
+            background-color: rgba(0, 66, 130, 0.8); /* Semi-transparent header background */
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             z-index: 10;
             box-sizing: border-box;
         }
 
+        /* Header Title */
         header h1 {
             color: #ffffff;
             font-size: 28px;
         }
 
+        /* Navigation Links Styling */
         nav a {
             color: #ffffff;
             text-decoration: none;
@@ -136,6 +157,7 @@
             transition: color 0.3s;
         }
 
+        /* Navigation Links Hover Effect */
         nav a:hover {
             color: #b3d1ff;
         }
@@ -178,9 +200,10 @@
     </style>
 </head>
 <body>
-    <!--Header content-->
+    <!-- Include header content from partial template -->
     {% include 'partials/_header.html' %}
 
+    <!-- Block for dynamic content insertion -->
     {% block content %}
 
     {% endblock content %}

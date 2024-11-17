@@ -1,18 +1,20 @@
 /* ------------------  Global Styling ------------------ */
-@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;500&display=swap'); /* Importing the Roboto font from Google Fonts */
 
-
+/* Defining custom CSS variables for shadow styles */
 :root {
     --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
+/* Basic body styling for font, minimum height, margin, and positioning */
 body {
     position: relative;
     font-family: 'Roboto', sans-serif;
-    min-height: 100vh;
+    min-height: 100vh; /* Ensures the body takes at least the full viewport height */
     margin: 0;
 }
 
+/* Adding a background image to the body with an overlay */
 body::before {
     content: '';
     position: absolute;
@@ -24,7 +26,7 @@ body::before {
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    z-index: -1;
+    z-index: -1; /* Ensures the background image stays behind all other content */
 }
 
 /* ------------------  Login Section  ------------------ */
@@ -33,9 +35,10 @@ body::before {
     font-family: 'Roboto', sans-serif;
     min-height: 100vh;
     margin: 0;
-    overflow: hidden;
+    overflow: hidden; /* Prevents content from overflowing */
 }
 
+/* Background image and gradient overlay for the login section */
 .login-container::before {
     content: '';
     position: absolute;
@@ -43,7 +46,7 @@ body::before {
     left: 0;
     right: 0;
     bottom: 0;
-    background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('../../static/images/login.jpg'); 
+    background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('../../static/images/login.jpg');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -59,6 +62,7 @@ body::before {
     overflow: hidden;
 }
 
+/* Background image and gradient overlay for the sign-up section */
 .signup-container::before {
     content: '';
     position: absolute;
@@ -66,58 +70,61 @@ body::before {
     left: 0;
     right: 0;
     bottom: 0;
-    background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('../../static/images/signup.jpg'); 
+    background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('../../static/images/signup.jpg');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
     z-index: -1;
 }
 
-/* ------------------  Register Page  ------------------ */
-
+/* ------------------  Register Page Styling  ------------------ */
 #form-container {
     color: white;
     background: rgba(255, 255, 255, 0.1);
-    border-radius: 15px; 
+    border-radius: 15px;
     padding: 40px;
     width: 400px;
-    max-width: 600px; 
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2); 
-    backdrop-filter: blur(8px);
+    max-width: 600px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(8px); /* Adds a blurred effect to the background */
     animation: fadeIn 1.5s ease;
     box-sizing: border-box;
-    
     position: fixed;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%); /* Centers the form on the screen */
 }
 
+/* Styling for the welcome message on the form */
 #welcome-message {
     text-align: center;
     margin-bottom: 20px;
 }
 
+/* Styling for heading in the welcome message */
 #welcome-message h1 {
     font-size: 36px;
 }
 
-
+/* Styling for the paragraph in the welcome message */
 #welcome-message p {
     font-size: 16px;
     color: rgb(97, 98, 105);
     font-weight: 300;
 }
 
+/* Form field container styles */
 .form-field {
     margin-bottom: 20px;
 }
 
+/* Label styling for form fields */
 .form-field label {
     font-size: 16px;
     line-height: 1.7em;
 }
 
+/* Input field styling */
 .form-field input {
     width: 100%;
     border: 2px solid rgba(198, 202, 219, 1);
@@ -127,8 +134,9 @@ body::before {
     box-sizing: border-box;
 }
 
+/* Styling for submit button */
 .form-field input[type='submit'] {
-    padding: 12px 30px; /* Same padding as button */
+    padding: 12px 30px;
     font-size: 18px;
     font-weight: bold;
     background-color: white;
@@ -138,13 +146,13 @@ body::before {
     margin: 10px 0 0 0;
     cursor: pointer;
     transition: all 0.4s ease;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2); /* Shadow effect */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2); /* Adds shadow effect on the button */
     position: relative;
     overflow: hidden;
     z-index: 2;
 }
 
-/* Create a sliding background effect like button::before */
+/* Sliding effect on button background on hover */
 .form-field input[type='submit']::before {
     content: '';
     position: absolute;
@@ -157,17 +165,17 @@ body::before {
     z-index: 1;
 }
 
-/* Slide background effect on hover */
+/* Button hover effect to slide the background */
 .form-field input[type='submit']:hover::before {
     left: 0;
 }
 
-/* Slight scaling effect on hover */
+/* Slight scale effect on button hover */
 .form-field input[type='submit']:hover {
     transform: scale(1.05);
 }
 
-/* Adjustments for mobile screens */
+/* Mobile-specific adjustments for smaller screens */
 @media screen and (max-width: 450px) {
     #form-container {
         width: 95%;
@@ -178,8 +186,6 @@ body::before {
     }
 }
 
-
-
 /* ----------------- Room Styling ------------------*/
 .room-container {
     position: relative;
@@ -189,6 +195,7 @@ body::before {
     overflow: hidden;
 }
 
+/* Background image and gradient overlay for the room section */
 .room-container::before {
     content: '';
     position: absolute;
@@ -196,18 +203,20 @@ body::before {
     left: 0;
     right: 0;
     bottom: 0;
-    background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('../../static/images/login.jpg'); 
+    background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('../../static/images/login.jpg');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
     z-index: -1;
 }
 
+/* Styling for room name */
 #room-name-wrapper {
     text-align: center;
     font-size: 18px;
 }
 
+/* Container for video streams in the room */
 #video-streams {
     display: flex;
     flex-wrap: wrap;
@@ -216,6 +225,7 @@ body::before {
     margin: 0 auto;
 }
 
+/* Styling for individual video containers */
 .video-container {
     flex-basis: 500px;
     flex-grow: 1;
@@ -228,15 +238,13 @@ body::before {
     position: relative;
 }
 
+/* Styling for the video player inside the container */
 .video-player {
     height: 100%;
     width: 100%;
 }
 
-.video-player > * {
-    border-radius: 5px;
-}
-
+/* Styling for usernames in the video container */
 .username-wrapper {
     position: absolute;
     top: 10px;
@@ -250,6 +258,7 @@ body::before {
     font-size: 14px;
 }
 
+/* Responsive styling for smaller screens */
 @media screen and (max-width:1650px) {
     .video-container {
         flex-basis: 300px;
@@ -257,9 +266,7 @@ body::before {
     }
 }
 
-
-/* ----------------- Room Styling | Controls ------------------*/
-
+/* ----------------- Room Controls Styling ------------------*/
 #controls-wrapper {
     display: flex;
     width: 100%;
@@ -269,21 +276,21 @@ body::before {
     bottom: 20px;
 }
 
+/* Styling for control icons (buttons) */
 .control-icon {
     height: 20px;
     width: 20px;
-    box-shadow: var(--shaddow);
+    box-shadow: var(--shadow);
     background-color: #fff;
     cursor: pointer;
     padding: 10px;
     border-radius: 5px;
-
 }
 
+/* Styling for the leave button */
 #leave-btn {
     background-color: rgb(255, 80, 80, 1);
 }
-
 
 /* Popup Card Styling */
 .popup {
@@ -318,7 +325,7 @@ body::before {
 }
 
 .popup-icon {
-    width: 40px;
+    width: 45px;
     height: 40px;
 }
 
@@ -375,8 +382,8 @@ body::before {
 /* Button to open the side panel */
 .open-panel-btn {
     position: fixed;
-    top: 2px; /* Adjusts vertical distance from the top */
-    right: 4px; /* Adjusts horizontal distance from the right */
+    top: 2px;
+    right: 4px;
     border: none;
     cursor: pointer;
     z-index: 1000; /* Ensures it stays above other elements */
@@ -434,8 +441,8 @@ body::before {
 
 .close-panel-btn {
     position: fixed;
-    top: 2px; /* Adjusts vertical distance from the top */
-    right: 4px; /* Adjusts horizontal distance from the right */
+    top: 2px;
+    right: 4px;
     border: none;
     cursor: pointer;
     z-index: 1000; /* Ensures it stays above other elements */

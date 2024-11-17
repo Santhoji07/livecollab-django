@@ -1,16 +1,23 @@
 {% if request.path != '/room/' %}
+<!-- This conditional statement ensures the header only renders if the current page is not the '/room/' page -->
 
 <header>
+    <!-- Main header section -->
+
+    <!-- Link to the home page -->
     <a href="{% url 'home' %}" style="text-decoration: none;">
-        <h1>UnityHub</span></h1>
+        <h1>UnityHub</h1> <!-- Title of the website, clicking redirects to the home page -->
     </a>
 
     <nav>
-        <a href="{% url 'home' %}">Home</a>
-        <a href="{% url 'about' %}">About Us</a>
-        <a href="{% url 'contact' %}">Contact</a>
+        <!-- Navigation bar with links to other pages -->
+        <a href="{% url 'home' %}">Home</a>  <!-- Link to Home page -->
+        <a href="{% url 'about' %}">About Us</a>  <!-- Link to About Us page -->
+        <a href="{% url 'contact' %}">Contact</a>  <!-- Link to Contact page -->
 
         {% if user.is_authenticated %}
+        <!-- This block runs if the user is authenticated (logged in) -->
+
         <!-- Form to handle logout if the user is authenticated -->
         <form id="logout-form" method="POST" action="{% url 'logout' %}" style="display: inline;">
             {% csrf_token %}
@@ -20,6 +27,8 @@
         </form>
         
         {% else %}
+        <!-- This block runs if the user is not authenticated (not logged in) -->
+         
         <!-- Form to handle login if the user is not authenticated -->
         <form id="login-form" method="POST" action="{% url 'login' %}" style="display: inline;">
             {% csrf_token %}
