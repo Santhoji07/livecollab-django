@@ -6,12 +6,14 @@
 <main class="room-container">
 
     <!-- Popup for Host to approve/deny joining users -->
-    <div id="approval-popup" class="hidden" style="text-align: center;">
-        <div>
-            <h3 style="color: white;">Users are requesting to join the room.</h3>
+    <div id="approval-popup" class="popup hidden">
+        <div class="popup-header">
+            <img src="{% static 'images/warning-icon.png' %}" alt="Warning Icon" class="popup-icon">
+            <h3>Confirm Member Join</h3>
             <div id="request-list"></div>
         </div>
     </div>
+
 
     <section id="room-name-wrapper" style="margin: 1em;">
         <p style="color: white;">Room: <span id="room-name"></span></p>
@@ -34,12 +36,46 @@
         </div>
 
     </section>
+
+    <!-- Button to open the side panel -->
+    <button id="open-panel-btn" class="open-panel-btn">
+        <img src="{% static 'images/group.png' %}">
+    </button>
+
+    <!-- Side Panel with current participants -->
+    <div id="side-panel" class="side-panel hidden">
+        <div id="panel-header">
+            <h2>Participants</h2>
+            <button id="close-panel-btn" class="close-panel-btn">X</button>
+        </div>
+        <div id="participants-list" class="participants-list">
+            <!-- Participants will be listed here -->
+        </div>
+    </div>
+
 </main>
 
 <script type="text/javascript" src="{% static 'assets/AgoraRTC_N-4.22.1.js' %}"></script>
 <script type="text/javascript" src="{% static 'js/streams.js' %}"></script>
 
 <script>
+    // Open the side panel
+    const openPanelBtn = document.getElementById("open-panel-btn");
+    const sidePanel = document.getElementById("side-panel");
+    const closePanelBtn = document.getElementById("close-panel-btn");
+
+    openPanelBtn.addEventListener("click", () => {
+        sidePanel.classList.remove("hidden");
+        sidePanel.classList.add("visible");
+    });
+
+    // Close the side panel
+    closePanelBtn.addEventListener("click", () => {
+        sidePanel.classList.remove("visible");
+        sidePanel.classList.add("hidden");
+    });
+
+
     const approvalPopup = document.getElementById("approval-popup");
     const requestList = document.getElementById("request-list");
     const roomNameElement = document.getElementById("room-name"); // Accessing the span with room name
@@ -73,9 +109,11 @@
                         const requestItem = document.createElement("div");
                         requestItem.classList.add("request-item");
                         requestItem.innerHTML = `
-                            <h3 style="color: white;">User: ${request.name}</h3>
-                            <button onclick="respondToJoinRequest('${request.user_id}', true)">Approve</button>
-                            <button onclick="respondToJoinRequest('${request.user_id}', false)">Deny</button>
+                            <p>Are you sure you wish to approve join for <strong><span id="member-name">${request.name}</span></strong>?</p>
+                            <div class="popup-actions">
+                                <button class="btn approve-btn" onclick="respondToJoinRequest('${request.user_id}', true)">Approve</button>
+                                <button class="btn cancel-btn" onclick="respondToJoinRequest('${request.user_id}', false)">Deny</button>
+                            </div>
                         `;
                         requestList.appendChild(requestItem);
                     });
@@ -106,6 +144,7 @@
             });
             const data = await response.json();
             console.log(data.message);
+
             // Refresh the pending requests after response
             checkPendingRequests();
         } catch (error) {
@@ -137,6 +176,41 @@
         }
     }, 3000);
 
+    // Function to fetch and update the list of participants in the room
+    async function updateParticipants() {
+        const roomName = roomNameElement.innerText;  // Get the room name from the span element
+
+        try {
+            // Fetch participants for the room
+            const response = await fetch(`/get_participants/${roomName}/`);
+            const data = await response.json();
+
+            if (data.status === "success") {
+                const participantsList = document.getElementById("participants-list");
+
+                // Clear the previous participant list
+                participantsList.innerHTML = "";
+
+                // Add each participant to the list
+                data.participants.forEach(participant => {
+                    const participantItem = document.createElement("p");
+                    participantItem.textContent = participant.username;
+                    participantItem.style.textTransform = "capitalize";  // Capitalize the username
+                    participantsList.appendChild(participantItem);
+                });
+            } else {
+                console.log("Error fetching participants: " + data.message);
+            }
+        } catch (error) {
+            console.error("Error fetching participants:", error);
+        }
+    }
+
+    // Call the updateParticipants function to populate the participant list on page load
+    updateParticipants();
+
+    // A polling mechanism to periodically update the participants list
+    setInterval(updateParticipants, 5000);  // Update every 5 seconds
 </script>
 
 

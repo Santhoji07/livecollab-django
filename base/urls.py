@@ -19,4 +19,5 @@ urlpatterns = [
     path('check_pending_requests/<str:room_name>/', views.check_pending_requests, name='check_pending_requests'),
     path('approve_join_request/<str:room_name>/<int:request_id>/', views.approve_join_request, name='approve_join_request'),
     path('check_join_request_status/<str:room_name>/<int:user_id>/', views.check_join_request_status, name='check_join_request_status'),
+    path('get_participants/<str:room_name>/', views.get_participants, name='get_participants'),
 ]

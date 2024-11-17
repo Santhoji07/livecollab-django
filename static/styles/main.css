@@ -284,14 +284,183 @@ body::before {
     background-color: rgb(255, 80, 80, 1);
 }
 
-/* Popup */
+
+/* Popup Card Styling */
 .popup {
-    background-color: #333;
-    padding: 1em;
-    border-radius: 5px;
-    color: white;
-    z-index: 10;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #fff;
+    padding: 20px 30px;
+    border-radius: 10px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.15);
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+    font-family: 'Arial', sans-serif;
+    z-index: 100;
 }
+
+/* Popup Header Styling */
+.popup-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.popup-header h3 {
+    font-size: 1.5rem;
+    color: #333;
+    margin: 0;
+}
+
+.popup-icon {
+    width: 40px;
+    height: 40px;
+}
+
+/* Popup Text Styling */
+.popup p {
+    font-size: 1rem;
+    color: #666;
+    margin-bottom: 20px;
+    line-height: 1.5;
+}
+
+/* Popup Actions Styling */
+.popup-actions {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+}
+
+.btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.approve-btn {
+    background-color: #ff5b5b;
+    color: white;
+}
+
+.approve-btn:hover {
+    background-color: #e04343;
+    box-shadow: 0px 3px 6px rgba(255, 91, 91, 0.3);
+}
+
+.cancel-btn {
+    background-color: #f3f3f3;
+    color: #333;
+}
+
+.cancel-btn:hover {
+    background-color: #e5e5e5;
+    box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Hidden Class */
 .hidden {
     display: none;
+}
+
+
+/* Button to open the side panel */
+.open-panel-btn {
+    position: fixed;
+    top: 2px; /* Adjusts vertical distance from the top */
+    right: 4px; /* Adjusts horizontal distance from the right */
+    border: none;
+    cursor: pointer;
+    z-index: 1000; /* Ensures it stays above other elements */
+    box-shadow: var(--shaddow);
+    background-color: #fff;
+    cursor: pointer;
+    padding: 6px 12px;
+    border-radius: 5px;
+}
+
+.open-panel-btn img {
+    height: 20px;
+    width: 20px;
+}
+
+/* Slide background effect on hover */
+.open-panel-btn:hover::before {
+    right: 0;
+}
+
+/* Side Panel Styles */
+.side-panel {
+    position: fixed;
+    top: 0;
+    right: 0; /* Position the panel at the right side */
+    width: 250px;
+    height: 100%;
+    background-color: #2c3e50;
+    color: white;
+    padding: 10px 20px;
+    box-shadow: -2px 0 10px rgba(0, 0, 0, 0.5);
+    transform: translateX(100%); /* Initially hide the panel by translating it off-screen */
+    transition: transform 0.3s ease-in-out;
+    z-index: 1000; /* Ensure it stays above other elements */
+}
+
+.side-panel.hidden {
+    transform: translateX(100%); /* Hidden state: fully off-screen */
+}
+
+.side-panel.visible {
+    transform: translateX(0); /* Visible state: fully on-screen */
+}
+
+/* Panel Header */
+#panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#panel-header h2 {
+    margin: 4px 0;
+}
+
+.close-panel-btn {
+    position: fixed;
+    top: 2px; /* Adjusts vertical distance from the top */
+    right: 4px; /* Adjusts horizontal distance from the right */
+    border: none;
+    cursor: pointer;
+    z-index: 1000; /* Ensures it stays above other elements */
+    box-shadow: var(--shaddow);
+    background-color: #fff;
+    cursor: pointer;
+    padding: 8px 12px;
+    border-radius: 5px;
+}
+
+.close-panel-btn.hidden {
+    transform: translateX(100%); /* Hidden state: fully off-screen */
+}
+
+.close-panel-btn.visible {
+    transform: translateX(0); /* Visible state: fully on-screen */
+}
+
+
+/* List of participants */
+.participants-list {
+    margin-top: 20px;
+    font-size: 18px;
+}
+
+.participants-list p {
+    padding: 8px 0;
 }

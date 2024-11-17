@@ -347,3 +347,22 @@ def check_join_request_status(request, room_name, user_id):
             "status": "error",
             "message": "Join request not found."
         }, status=404)
+
+
+# View to get the list of participants in a room
+@login_required(login_url='/login/')
+def get_participants(request, room_name):
+    try:
+        # Fetch the room by name
+        room = Room.objects.get(room_name=room_name)
+
+        # Get all participants in the room
+        participants = room.participants.all()
+
+        # Serialize participant usernames
+        participants_data = [{"username": participant.username} for participant in participants]
+
+        return JsonResponse({"status": "success", "participants": participants_data})
+
+    except Room.DoesNotExist:
+        return JsonResponse({"status": "error", "message": "Room not found"}, status=404)

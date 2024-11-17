@@ -61,7 +61,7 @@ let joinAndDisplayLocalStream = async () => {
 let handleUserJoined = async (user, mediaType) => {
     // Add the remote user to the 'remoteUsers' object for tracking.
     remoteUsers[user.uid] = user
-    
+
     // Subscribe to the remote user's media (either video or audio).
     await client.subscribe(user, mediaType)
 
@@ -182,6 +182,7 @@ let deleteMember = async () => {
 
     let member = await response.json()
 }
+
 
 // Call the function to join the channel and display the local stream.
 joinAndDisplayLocalStream()
