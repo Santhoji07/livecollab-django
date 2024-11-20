@@ -1,113 +1,104 @@
-// Define the App ID for Agora
+// Define the App ID for Agora, the unique identifier for your Agora project.
 const APP_ID = '351d9881f5d3413ba18e08949844fddb'
-// Get the channel name and token from the session storage.
+// Get the channel name and token from the session storage (where they're saved when the user joins).
 const CHANNEL = sessionStorage.getItem('room')
 const TOKEN = sessionStorage.getItem('token')
 
-// Get the UID (User ID) from the session storage and convert it to a number.
+// Retrieve the user's unique identifier (UID) and name from the session storage.
 let UID = Number(sessionStorage.getItem('UID'))
-
-// Get the user's name from session storage.
 let NAME = sessionStorage.getItem('name')
 
-// Create an Agora client instance for RTC (Real-Time Communication) using VP8 codec for video.
+// Create an Agora client instance for Real-Time Communication (RTC), using VP8 codec for video.
 const client = AgoraRTC.createClient({ mode: 'rtc', codec: 'vp8' })
 
-// Declare variables for storing local media tracks (microphone and camera) and remote users.
+// Declare variables to store local media tracks (microphone and camera) and remote users.
 let localTracks = []
 let remoteUsers = {}
 
-// Async function to join the Agora channel and display the local video stream.
+// Function to join the channel, create and display the local stream, and subscribe to remote users.
 let joinAndDisplayLocalStream = async () => {
-    // Display the current room name in the UI.
-    document.getElementById('room-name').innerText = CHANNEL
+    document.getElementById('room-name').innerText = CHANNEL;
 
-    // Set up event listeners for when a remote user publishes (joins the call) or leaves.
-    client.on('user-published', handleUserJoined)  // When a remote user publishes their media.
-    client.on('user-left', handleUserLeft)         // When a remote user leaves the call.
+    // Set up event listeners for new users joining and leaving the channel.
+    client.on('user-published', handleUserJoined);
+    client.on('user-left', handleUserLeft);
 
     try {
-        // Join the Agora channel using the app ID, channel name, token, and UID.
-        await client.join(APP_ID, CHANNEL, TOKEN, UID)
-    }
-    catch (error) {
-        // If there's an error joining the channel, log it and redirect to the home page.
-        console.error(error)
-        window.open('/', '_self')
+        // Attempt to join the Agora channel using the provided App ID, channel, token, and UID.
+        await client.join(APP_ID, CHANNEL, TOKEN, UID);
+    } catch (error) {
+        console.error("Error joining channel:", error);
+        window.open('/', '_self'); // Redirect to home if joining fails.
     }
 
-    // Get local microphone and camera tracks.
-    localTracks = await AgoraRTC.createMicrophoneAndCameraTracks()
+    // Create the local media tracks (audio and video).
+    localTracks = await AgoraRTC.createMicrophoneAndCameraTracks();
+    let member = await createMember(); // Create a new member for the server.
 
-    // Create a new member for the session by calling the server.
-    let member = await createMember()
-
-    // Create an HTML element to display the local user's video stream and their name.
+    // Generate the HTML to display the local video feed.
     let player = `<div class="video-container" id="user-container-${UID}">
                     <div class="username-wrapper"><span class="user-name">${member.name}</span></div>
                     <div class="video-player" id="user-${UID}"></div>
-                </div>`
+                </div>`;
+    document.getElementById('video-streams').insertAdjacentHTML('beforeend', player);
 
-    // Add the video player HTML to the DOM under the 'video-streams' element.
-    document.getElementById('video-streams').insertAdjacentHTML('beforeend', player)
+    // Play the local video stream and publish it to the channel.
+    localTracks[1].play(`user-${UID}`);
+    await client.publish([localTracks[0], localTracks[1]]);
 
-    // Play the local video track inside the video player.
-    localTracks[1].play(`user-${UID}`)
+    // Subscribe to existing remote users if any are already in the channel.
+    for (let user of client.remoteUsers) {
+        console.log("Subscribing to existing user:", user.uid);
+        await subscribeToRemoteUser(user);
+    }
+};
 
-    // Publish both the local microphone and camera tracks to the Agora channel, so other users can see and hear the local user.
-    await client.publish([localTracks[0], localTracks[1]])
-}
+// Function to subscribe to a remote user's media (audio and video).
+let subscribeToRemoteUser = async (user) => {
+    try {
+        // Subscribe to the user's video and audio streams.
+        await client.subscribe(user, 'video').catch(console.error);
+        await client.subscribe(user, 'audio').catch(console.error);
 
-// Function to handle when a remote user joins and publishes media (video/audio).
-let handleUserJoined = async (user, mediaType) => {
-    // Add the remote user to the 'remoteUsers' object for tracking.
-    remoteUsers[user.uid] = user
-
-    // Subscribe to the remote user's media (either video or audio).
-    await client.subscribe(user, mediaType)
-
-    // If the remote user's media is a video stream.
-    if (mediaType === 'video') {
-        // Remove any existing video container for the user to avoid duplicates.
-        let player = document.getElementById(`user-container-${user.uid}`)
-        if (player != null) {
-            player.remove()
+        // If the user is new, create the UI for their video feed.
+        let player = document.getElementById(`user-container-${user.uid}`);
+        if (!player) {
+            let member = await getMember(user); // Fetch remote user information from the server.
+            player = `<div class="video-container" id="user-container-${user.uid}">
+                        <div class="username-wrapper"><span class="user-name">${member.name}</span></div>
+                        <div class="video-player" id="user-${user.uid}"></div>
+                    </div>`;
+            document.getElementById('video-streams').insertAdjacentHTML('beforeend', player);
         }
 
-        // Get the remote user's member information from the server.
-        let member = await getMember(user)
+        // Play the remote user's video and audio streams if available.
+        if (user.videoTrack) {
+            user.videoTrack.play(`user-${user.uid}`);
+        }
 
-        // Create a new HTML structure for the remote user's video stream.
-        player = `<div class="video-container" id="user-container-${user.uid}">
-                    <div class="username-wrapper"><span class="user-name">${member.name}</span></div>
-                    <div class="video-player" id="user-${user.uid}"></div>
-                </div>`
-
-        // Add the remote user's video stream to the DOM under the 'video-streams' element.
-        document.getElementById('video-streams').insertAdjacentHTML('beforeend', player)
-
-        // Play the remote user's video track in the respective video player.
-        user.videoTrack.play(`user-${user.uid}`)
+        if (user.audioTrack) {
+            user.audioTrack.play();
+        }
+    } catch (error) {
+        console.error("Error subscribing to user:", user.uid, error);
     }
+};
 
-    // If the remote user's media is an audio stream.
-    if (mediaType === 'audio') {
-        // Play the remote user's audio track (there's no specific UI for audio).
-        user.audioTrack.play()
-    }
-}
+// Event handler for when a new user joins the channel.
+let handleUserJoined = async (user, mediaType) => {
+    remoteUsers[user.uid] = user;
+    await subscribeToRemoteUser(user);
+};
 
-// Function to handle when a remote user leaves the call.
+// Event handler for when a user leaves the channel.
 let handleUserLeft = async (user) => {
-    // Remove the user from the 'remoteUsers' object.
-    delete remoteUsers[user.uid]
-    // Remove the remote user's video container from the DOM.
-    document.getElementById(`user-container-${user.uid}`).remove()
-}
+    delete remoteUsers[user.uid];
+    document.getElementById(`user-container-${user.uid}`)?.remove();
+};
 
-// Function to leave the channel and stop the local media streams.
+// Function to leave the channel, stop local media tracks, and redirect to the home page.
 let leaveAndRemoveLocalStream = async () => {
-    // Stop and close each local media track (microphone and camera).
+    // Stop and close all local media tracks (camera and microphone).
     for (let i = 0; localTracks.length > i; i++) {
         localTracks[i].stop()
         localTracks[i].close()
@@ -119,37 +110,49 @@ let leaveAndRemoveLocalStream = async () => {
     // Delete the local user's member information from the server.
     deleteMember()
 
-    // Redirect to the home page after leaving.
+    // Redirect to the home page after leaving the channel.
     window.open('/', '_self')
 }
 
-// Function to toggle the local camera (turn on/off).
+// Function to toggle the local camera on/off.
 let toggleCamera = async (e) => {
-    // If the camera is muted (off), unmute it and change the button color to white.
+    // If the camera is off (muted), unmute it and change the button style.
     if (localTracks[1].muted) {
         await localTracks[1].setMuted(false)
         e.target.style.backgroundColor = '#fff'
     } else {
-        // If the camera is unmuted (on), mute it and change the button color to red.
+        // If the camera is on, mute it and change the button style.
         await localTracks[1].setMuted(true)
         e.target.style.backgroundColor = 'rgb(255, 80, 80, 1)'
     }
+
+    // Re-subscribe to remote users after toggling the camera.
+    for (let user of client.remoteUsers) {
+        console.log("Re-subscribing to user:", user.uid);
+        await subscribeToRemoteUser(user);
+    }
 }
 
-// Function to toggle the local microphone (turn on/off).
+// Function to toggle the local microphone on/off.
 let toggleMic = async (e) => {
-    // If the microphone is muted (off), unmute it and change the button color to white.
+    // If the microphone is off (muted), unmute it and change the button style.
     if (localTracks[0].muted) {
         await localTracks[0].setMuted(false)
         e.target.style.backgroundColor = '#fff'
     } else {
-        // If the microphone is unmuted (on), mute it and change the button color to red.
+        // If the microphone is on, mute it and change the button style.
         await localTracks[0].setMuted(true)
         e.target.style.backgroundColor = 'rgb(255, 80, 80, 1)'
     }
+
+    // Re-subscribe to remote users after toggling the microphone.
+    for (let user of client.remoteUsers) {
+        console.log("Re-subscribing to user:", user.uid);
+        await subscribeToRemoteUser(user);
+    }
 }
 
-// Function to create a new member by sending a POST request to the server.
+// Function to create a new member on the server.
 let createMember = async () => {
     let response = await fetch('/create_member/', {
         method: 'POST',
@@ -163,7 +166,7 @@ let createMember = async () => {
     return member
 }
 
-// Function to get a member's information based on their UID and room name.
+// Function to retrieve member details from the server based on UID.
 let getMember = async (user) => {
     let response = await fetch(`/get_member/?UID=${user.uid}&room_name=${CHANNEL}`)
     let member = await response.json()
@@ -171,7 +174,7 @@ let getMember = async (user) => {
     return member
 }
 
-// Function to delete a member by sending a POST request to the server.
+// Function to delete the member from the server when they leave the channel.
 let deleteMember = async () => {
     let response = await fetch('/delete_member/', {
         method: 'POST',
@@ -184,11 +187,10 @@ let deleteMember = async () => {
     let member = await response.json()
 }
 
-
 // Call the function to join the channel and display the local stream.
 joinAndDisplayLocalStream()
 
-// When the window is about to unload, call the deleteMember function to remove the user.
+// Add event listener to delete the member when the window is about to unload (user leaves the page).
 window.addEventListener('beforeunload', deleteMember)
 
 // Add event listeners for the leave, camera, and microphone buttons.
