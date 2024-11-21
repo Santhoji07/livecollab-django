@@ -112,8 +112,8 @@
                         requestItem.innerHTML = `
                             <p>Are you sure you wish to approve join for <strong><span id="member-name">${request.name}</span></strong>?</p>
                             <div class="popup-actions">
-                                <button class="btn approve-btn" onclick="respondToJoinRequest('${request.user_id}', true)">Approve</button>
-                                <button class="btn cancel-btn" onclick="respondToJoinRequest('${request.user_id}', false)">Deny</button>
+                                <button class="approve-btn" onclick="respondToJoinRequest('${request.user_id}', true)">Approve</button>
+                                <button class="cancel-btn" onclick="respondToJoinRequest('${request.user_id}', false)">Deny</button>
                             </div>
                         `;
                         requestList.appendChild(requestItem);
@@ -194,10 +194,19 @@
 
                 // Add each participant to the list
                 data.participants.forEach(participant => {
-                    const participantItem = document.createElement("p");
-                    participantItem.textContent = participant.username;
-                    participantItem.style.textTransform = "capitalize";  // Capitalize usernames
-                    participantsList.appendChild(participantItem);
+                    // Generate the participant HTML
+                    const participantItem = `
+                        <div class="participant-item">
+                            <p class="participant-name">${participant.username}</p>
+                            ${participant.is_host ? `<span class="host-label">Host</span>` : ""}
+
+                            <!-- Only show the "Remove" button if the current user is the host AND the participant is not the host -->
+                            ${isHost && !participant.is_host ? `<button class="remove-btn" onclick="removeParticipant('${participant}')">Remove</button>` : ""}
+                        </div>
+                    `;
+
+                    // Append the participant HTML to the list using insertAdjacentHTML
+                    participantsList.insertAdjacentHTML("beforeend", participantItem);
                 });
             } else {
                 console.log("Error fetching participants: " + data.message);

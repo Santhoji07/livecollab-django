@@ -340,8 +340,14 @@ def get_participants(request, room_name):
         # Get all participants of the room
         participants = room.participants.all()
 
-        # Prepare the data for all participants
-        participants_data = [{"username": participant.username} for participant in participants]
+        # Prepare the data for all participants with "is_host" field
+        participants_data = [
+            {
+                "username": participant.username,
+                "is_host": participant == room.current_host  # Check if the participant is the current host
+            }
+            for participant in participants
+        ]
 
         # Return the list of participants
         return JsonResponse({"status": "success", "participants": participants_data})
