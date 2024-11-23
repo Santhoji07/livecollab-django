@@ -1,4 +1,4 @@
-/* ------------------  Global Styling ------------------ */
+/* Global Styling */
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;500&display=swap'); /* Importing the Roboto font from Google Fonts */
 
 /* Defining custom CSS variables for shadow styles */
@@ -6,7 +6,7 @@
     --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
-/* Basic body styling for font, minimum height, margin, and positioning */
+/* Basic body styling */
 body {
     position: relative;
     font-family: 'Roboto', sans-serif;
@@ -29,7 +29,7 @@ body::before {
     z-index: -1; /* Ensures the background image stays behind all other content */
 }
 
-/* ------------------  Login Section  ------------------ */
+/* Login Section */
 .login-container {
     position: relative;
     font-family: 'Roboto', sans-serif;
@@ -53,7 +53,7 @@ body::before {
     z-index: -1;
 }
 
-/* ------------------  Sign Up Section  ------------------ */
+/* Sign Up Section */
 .signup-container {
     position: relative;
     font-family: 'Roboto', sans-serif;
@@ -77,7 +77,7 @@ body::before {
     z-index: -1;
 }
 
-/* ------------------  Register Page Styling  ------------------ */
+/*  Lobby Page Styling */
 #form-container {
     color: white;
     background: rgba(255, 255, 255, 0.1);
@@ -186,7 +186,7 @@ body::before {
     }
 }
 
-/* ----------------- Room Styling ------------------*/
+/* Room Styling */
 .room-container {
     position: relative;
     font-family: 'Roboto', sans-serif;
@@ -265,7 +265,7 @@ body::before {
     }
 }
 
-/* ----------------- Room Controls Styling ------------------*/
+/* Room Controls Styling */
 #controls-wrapper {
     display: flex;
     width: 100%;
@@ -317,12 +317,14 @@ body::before {
     margin-bottom: 20px;
 }
 
+/* Popup Header Styling */
 .popup-header h3 {
     font-size: 1.5rem;
     color: #333;
     margin: 0;
 }
 
+/* Icon Styling in Popup */
 .popup-icon {
     width: 45px;
     height: 40px;
@@ -343,6 +345,7 @@ body::before {
     gap: 15px;
 }
 
+/* Common Button Styling */
 .btn {
     padding: 10px 20px;
     border: none;
@@ -352,31 +355,34 @@ body::before {
     transition: background-color 0.3s ease, box-shadow 0.3s ease;
 }
 
+/* Approve Button Styling */
 .approve-btn {
     background-color: #ff5b5b;
     color: white;
 }
 
+/* Hover effect for Approve Button */
 .approve-btn:hover {
     background-color: #e04343;
     box-shadow: 0px 3px 6px rgba(255, 91, 91, 0.3);
 }
 
+/* Cancel Button Styling */
 .cancel-btn {
     background-color: #f3f3f3;
     color: #333;
 }
 
+/* Hover effect for Cancel Button */
 .cancel-btn:hover {
     background-color: #e5e5e5;
     box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.1);
 }
 
-/* Hidden Class */
+/* Hide Panel*/
 .hidden {
     display: none;
 }
-
 
 /* Button to open the side panel */
 .open-panel-btn {
@@ -438,6 +444,7 @@ body::before {
     margin: 4px 0;
 }
 
+/* Close Panel Button */
 .close-panel-btn {
     position: fixed;
     top: 2px;
@@ -460,7 +467,6 @@ body::before {
     transform: translateX(0); /* Visible state: fully on-screen */
 }
 
-
 /* List of participants */
 .participants-list {
     margin-top: 20px;
@@ -468,44 +474,77 @@ body::before {
 }
 
 .participants-list p {
-    padding: 8px 0;
+    padding: 8px;
 }
 
+/* Individual participant item */
 .participant-item {
     display: flex;
-    align-items: center;
+    flex-direction: column;
+    align-items: flex-start; 
     margin-bottom: 10px;
+    background-color: white;
+    padding: 10px;
+    border-radius: 5px;
 }
 
+/* Participant details section */
+.participant-details {
+    display: flex;
+    align-items: center;
+}
+
+/* Participant's name styling */
 .participant-name {
-    margin-right: 10px;
     text-transform: capitalize;
     font-size: 18px;
     font-weight: bold;
-    color: white;
+    color: black;
 }
 
+/* Host label styling */
 .host-label {
     background-color: rgba(65, 105, 225, 0.8);
     color: white;
-    padding: 2px 8px;
+    padding: 4px 8px;
     border-radius: 10px;
-    font-size: 18px;
+    font-size: 16px;
     font-weight: bold;
+    margin-left: 10px;
 }
 
+/* Participant actions section (buttons) */
+.participant-actions {
+    display: flex; 
+    gap: 10px; 
+}
+
+/* Host button and remove button styling */
+.host-btn,
 .remove-btn {
-    position: absolute;
-    right: 4px;
-    background-color: #ff5b5b;
+    background-color: rgba(65, 105, 225, 0.8);
     color: white;
     height: 30px;
     font-size: 16px;
     font-weight: bold;
     border-radius: 5px;
     padding: 2px 8px;
+    border: none; 
+    cursor: pointer; 
 }
 
+/* Hover effect for the Host button */
+.host-btn:hover {
+    background-color: rgba(91, 102, 255, 0.8);
+    box-shadow: 0px 3px 6px rgba(91, 102, 255, 0.3);
+}
+
+/* Remove button styling */
+.remove-btn {
+    background-color: #ff5b5b;
+}
+
+/* Hover effect for the Remove button */
 .remove-btn:hover {
     background-color: #e04343;
     box-shadow: 0px 3px 6px rgba(255, 91, 91, 0.3);

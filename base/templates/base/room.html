@@ -85,6 +85,7 @@
 
     let isHost = true;  // Variable to store whether the user is the host
 
+
     // Function to check for pending join requests
     async function checkPendingRequests() {
         const roomName = roomNameElement.innerText;  // Get the room name from the span element
@@ -130,6 +131,7 @@
         }
     }
 
+
     // Function to respond to a join request (approve or deny)
     async function respondToJoinRequest(userId, approve) {
         const roomName = roomNameElement.innerText;  // Get the room name when responding
@@ -154,73 +156,30 @@
         }
     }
 
+
     // Helper function to get the CSRF token from cookies (used for secure POST requests)
     function getCookie(name) {
         let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let i = 0; i < cookies.length; i++) {
-                const cookie = cookies[i].trim();
-                if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
+        if (document.cookie && document.cookie !== '') { // Check if the `document.cookie` string exists and is not empty
+            const cookies = document.cookie.split(';'); // Split the cookie string into individual cookies
+            for (let i = 0; i < cookies.length; i++) { // Loop through all cookies
+                const cookie = cookies[i].trim(); // Trim leading and trailing spaces for each cookie
+                if (cookie.substring(0, name.length + 1) === (name + '=')) { // Check if the cookie starts with the given name
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1)); // Decode and extract the cookie's value
+                    break; // Stop searching as we've found the cookie
                 }
             }
         }
-        return cookieValue;
+        return cookieValue; // Return the value of the cookie, or null if not found
     }
 
-    // Polling for pending requests every 3 seconds if the user is the host
+
+    // Polling for pending requests every 5 seconds if the user is the host
     setInterval(() => {
         if (isHost) {
             checkPendingRequests();  // Only poll if the user is the host
         }
-    }, 3000);
-
-    // Function to fetch and update the list of participants in the room
-    async function updateParticipants() {
-        const roomName = roomNameElement.innerText;  // Get the room name again
-
-        try {
-            // Fetch participants for the room
-            const response = await fetch(`/get_participants/${roomName}/`);
-            const data = await response.json();
-
-            if (data.status === "success") {
-                const participantsList = document.getElementById("participants-list");
-
-                // Clear the previous list of participants
-                participantsList.innerHTML = "";
-
-                // Add each participant to the list
-                data.participants.forEach(participant => {
-                    // Generate the participant HTML
-                    const participantItem = `
-                        <div class="participant-item">
-                            <p class="participant-name">${participant.username}</p>
-                            ${participant.is_host ? `<span class="host-label">Host</span>` : ""}
-
-                            <!-- Only show the "Remove" button if the current user is the host AND the participant is not the host -->
-                            ${isHost && !participant.is_host ? `<button class="remove-btn" onclick="removeParticipant('${participant}')">Remove</button>` : ""}
-                        </div>
-                    `;
-
-                    // Append the participant HTML to the list using insertAdjacentHTML
-                    participantsList.insertAdjacentHTML("beforeend", participantItem);
-                });
-            } else {
-                console.log("Error fetching participants: " + data.message);
-            }
-        } catch (error) {
-            console.error("Error fetching participants:", error);
-        }
-    }
-
-    // Call the updateParticipants function on page load to populate the participants list
-    updateParticipants();
-
-    // Periodically update the participants list every 5 seconds
-    setInterval(updateParticipants, 5000);
+    }, 5000);
 </script>
 
 {% endblock content %}

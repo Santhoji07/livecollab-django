@@ -15,6 +15,7 @@ const client = AgoraRTC.createClient({ mode: 'rtc', codec: 'vp8' })
 let localTracks = []
 let remoteUsers = {}
 
+
 // Function to join the channel, create and display the local stream, and subscribe to remote users.
 let joinAndDisplayLocalStream = async () => {
     document.getElementById('room-name').innerText = CHANNEL;
@@ -53,6 +54,7 @@ let joinAndDisplayLocalStream = async () => {
     }
 };
 
+
 // Function to subscribe to a remote user's media (audio and video).
 let subscribeToRemoteUser = async (user) => {
     try {
@@ -84,17 +86,20 @@ let subscribeToRemoteUser = async (user) => {
     }
 };
 
+
 // Event handler for when a new user joins the channel.
 let handleUserJoined = async (user, mediaType) => {
     remoteUsers[user.uid] = user;
     await subscribeToRemoteUser(user);
 };
 
+
 // Event handler for when a user leaves the channel.
 let handleUserLeft = async (user) => {
     delete remoteUsers[user.uid];
     document.getElementById(`user-container-${user.uid}`)?.remove();
 };
+
 
 // Function to leave the channel, stop local media tracks, and redirect to the home page.
 let leaveAndRemoveLocalStream = async () => {
@@ -113,6 +118,7 @@ let leaveAndRemoveLocalStream = async () => {
     // Redirect to the home page after leaving the channel.
     window.open('/', '_self')
 }
+
 
 // Function to toggle the local camera on/off.
 let toggleCamera = async (e) => {
@@ -133,6 +139,7 @@ let toggleCamera = async (e) => {
     }
 }
 
+
 // Function to toggle the local microphone on/off.
 let toggleMic = async (e) => {
     // If the microphone is off (muted), unmute it and change the button style.
@@ -152,12 +159,14 @@ let toggleMic = async (e) => {
     }
 }
 
+
 // Function to create a new member on the server.
 let createMember = async () => {
     let response = await fetch('/create_member/', {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            "X-CSRFToken": getCookie('csrftoken')  // CSRF token for security
         },
         body: JSON.stringify({ 'name': NAME, 'room_name': CHANNEL, 'UID': UID })
     })
@@ -165,6 +174,7 @@ let createMember = async () => {
     let member = await response.json()
     return member
 }
+
 
 // Function to retrieve member details from the server based on UID.
 let getMember = async (user) => {
@@ -174,12 +184,14 @@ let getMember = async (user) => {
     return member
 }
 
+
 // Function to delete the member from the server when they leave the channel.
 let deleteMember = async () => {
     let response = await fetch('/delete_member/', {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            "X-CSRFToken": getCookie('csrftoken')  // CSRF token for security
         },
         body: JSON.stringify({ 'name': NAME, 'room_name': CHANNEL, 'UID': UID })
     })
@@ -187,8 +199,235 @@ let deleteMember = async () => {
     let member = await response.json()
 }
 
+
+// Function to retrieve member's UID from the server based on username.
+let getUidByUsername = async (username) => {
+    // Capitalize the first letter of the username for consistency.
+    username = username.charAt(0).toUpperCase() + username.slice(1).toLowerCase();
+
+    // Make a request to the server to fetch the UID for the given username and room name.
+    let response = await fetch(`/get_uid_by_username/?username=${username}&room_name=${CHANNEL}`);
+
+    // Parse the server's response as JSON.
+    let data = await response.json();
+
+    // Check if the server returned an error.
+    if (data.error) {
+        console.error('Error:', data.error);
+        return null; // Return null if an error occurred.
+    }
+
+    // Return the UID from the server's response.
+    return data.uid;
+};
+
+
+// Variable to track the previous host
+let previousHost = null;
+
+// Function to fetch and update the list of participants in the room.
+async function updateParticipants() {
+    try {
+        // Fetch the list of participants for the current room from the server.
+        const response = await fetch(`/get_participants/${CHANNEL}/`);
+        const data = await response.json();
+
+        if (data.status === "success") {
+            const participantsList = document.getElementById("participants-list");
+
+            // Clear the existing participants list from the UI.
+            participantsList.innerHTML = "";
+
+            let localUserInRoom = false;
+            let currentHost = null; // Track the current host during this update
+
+            // Iterate over the list of participants returned by the server.
+            data.participants.forEach(participant => {
+                // Check if the local user is in the room by comparing usernames (case-insensitive).
+                if (participant.username.toLowerCase() === NAME.toLowerCase()) {
+                    localUserInRoom = true;
+                }
+
+                // Identify the current host
+                if (participant.is_host) {
+                    currentHost = participant.username;
+                }
+                
+                // Generate the HTML for each participant.
+                const participantItem = `
+                    <div class="participant-item">
+                        <div class="participant-details">
+                            <p class="participant-name">${participant.username}</p>
+                            ${participant.is_host ? `<span class="host-label">Host</span>` : ""}
+                        </div>
+
+                        <!-- Buttons go on the next line -->
+                        ${isHost && !participant.is_host ? `
+                            <div class="participant-actions">
+                                <button class="host-btn" onclick="changeHost('${participant.username}')">Make Host</button>
+                                <button class="remove-btn" onclick="removeParticipant('${participant.username}')">Remove</button>
+                            </div>
+                        ` : ""}
+                    </div>
+                `;
+
+                // Add the participant's HTML to the list in the UI.
+                participantsList.insertAdjacentHTML("beforeend", participantItem);
+            });
+
+            // If the local user is not found in the participants list, leave the channel and clean up.
+            if (!localUserInRoom) {
+                console.log("Local user is no longer in the participants list. Leaving the channel...");
+                await leaveAndRemoveLocalStream();
+            }
+
+            // Check if the host has changed
+            if (currentHost !== previousHost) {
+                console.log(`Host has changed from ${previousHost || "None"} to ${currentHost || "None"}`);
+                previousHost = currentHost; // Update the previous host
+                checkPendingRequests(); // Call the function when the host changes
+            }
+        } else {
+            // Log any errors returned by the server.
+            console.log("Error fetching participants: " + data.message);
+        }
+    } catch (error) {
+        // Log any errors that occur during the fetch operation.
+        console.error("Error fetching participants:", error);
+    }
+}
+
+
+// Function to change the host of the room
+let changeHost = async (name) => {
+    try {
+        // Capitalize the first letter of the username for consistency
+        name = name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
+
+        // Send a request to the server to update the host
+        let response = await fetch('/change_host/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                "X-CSRFToken": getCookie('csrftoken')  // CSRF token for security
+            },
+            body: JSON.stringify({ 'name': name, 'room_name': CHANNEL })
+        });
+
+        // Parse the server's response
+        let result = await response.json();
+
+        if (result.error) {
+            console.error('Error changing host:', result.error);
+            return; // Exit if there was an error
+        }
+
+        // Log success message
+        console.log(`Host has been successfully changed to ${name}.`);
+    } catch (error) {
+        // Log any errors that occur during the changeHost process
+        console.error('Error while changing host:', error);
+    }
+};
+
+
+// Function to delete the member from the server and remove the participant (remote user) from the channel.
+let removeParticipant = async (name) => {
+    try {
+        // Capitalize the first letter of the username for consistency.
+        name = name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
+
+        // Retrieve the UID of the participant from the server using their username and room name.
+        let uid = await getUidByUsername(name, CHANNEL);
+
+        if (!uid) {
+            console.error('UID not found for the username:', name);
+            return; // Exit if the UID cannot be found.
+        }
+
+        // Send a request to the server to delete the participant by their username and UID.
+        let response = await fetch('/remove_participant_by_name/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                "X-CSRFToken": getCookie('csrftoken')  // CSRF token for security
+            },
+            body: JSON.stringify({ 'name': name, 'room_name': CHANNEL, 'UID': uid })
+        });
+
+        // Parse the server's response.
+        let member = await response.json();
+        if (member.error) {
+            console.error('Error deleting member from server:', member.error);
+            return; // Exit if there was an error deleting the member.
+        }
+
+        // Get the remote user object from the local `remoteUsers` object using the UID.
+        let remoteUser = remoteUsers[uid];
+
+        if (!remoteUser) {
+            console.error('Remote user not found in remoteUsers:', uid);
+            return; // Exit if the remote user object does not exist.
+        }
+
+        // Unsubscribe from the remote user's video and audio streams (if they are active).
+        try {
+            await client.unsubscribe(remoteUser, 'video').catch((error) => {
+                console.error('Error unsubscribing video:', error);
+            });
+            await client.unsubscribe(remoteUser, 'audio').catch((error) => {
+                console.error('Error unsubscribing audio:', error);
+            });
+        } catch (error) {
+            // Log any errors that occur during the unsubscribe process.
+            console.error('Error while unsubscribing media streams:', error);
+        }
+
+        // Remove the remote user from the `remoteUsers` object.
+        delete remoteUsers[uid];
+
+        // Remove the remote user's DOM element from the page (if it exists).
+        const userContainer = document.getElementById(`user-container-${uid}`);
+        if (userContainer) {
+            userContainer.remove();
+        }
+
+        // Log a success message indicating that the user has been removed.
+        console.log(`${name} (UID: ${uid}) has been successfully removed from the channel and server.`);
+    } catch (error) {
+        // Log any errors that occur during the removeParticipant process.
+        console.error('Error while removing participant:', error);
+    }
+};
+
+
+// Helper function to get the CSRF token from cookies (used for secure POST requests)
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') { // Check if the `document.cookie` string exists and is not empty
+        const cookies = document.cookie.split(';'); // Split the cookie string into individual cookies
+        for (let i = 0; i < cookies.length; i++) { // Loop through all cookies
+            const cookie = cookies[i].trim(); // Trim leading and trailing spaces for each cookie
+            if (cookie.substring(0, name.length + 1) === (name + '=')) { // Check if the cookie starts with the given name
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1)); // Decode and extract the cookie's value
+                break; // Stop searching as we've found the cookie
+            }
+        }
+    }
+    return cookieValue; // Return the value of the cookie, or null if not found
+}
+
+
 // Call the function to join the channel and display the local stream.
 joinAndDisplayLocalStream()
+
+
+// Call the updateParticipants function on page load to populate the participants list
+updateParticipants(); 
+
+// Periodically update the participants list every 3 seconds
+setInterval(updateParticipants, 3000);
+
 
 // Add event listener to delete the member when the window is about to unload (user leaves the page).
 window.addEventListener('beforeunload', deleteMember)

@@ -61,6 +61,7 @@
     const actionType = '{{ action_type }}'; // Determines if the user is hosting or joining
     let userId, roomName; // Variables for storing user and room info globally
 
+
     // Handles form submission
     let handleSubmit = async (e) => {
         e.preventDefault(); // Prevent default form behavior
@@ -106,6 +107,7 @@
         }
     };
 
+
     // Sends a request to join a room
     async function requestToJoinRoom(room, name, uid) {
         try {
@@ -132,6 +134,7 @@
             console.error("Error requesting to join:", error);
         }
     }
+
 
     // Polling function to check the status of the join request
     async function checkJoinRequestStatus() {
@@ -160,11 +163,13 @@
         }
     }
 
+
     // Starts polling the server every 5 seconds to check join request status
     let statusInterval;
     function startPollingJoinStatus() {
         statusInterval = setInterval(checkJoinRequestStatus, 5000);
     }
+
 
     // Helper function to get CSRF token from cookies
     function getCookie(name) {
@@ -182,9 +187,9 @@
         return cookieValue;
     }
 
+
     // Attach the handleSubmit function to the form's submit event
     form.addEventListener('submit', handleSubmit);
-    
 </script>
 
 {% endblock content %}

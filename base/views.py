@@ -4,9 +4,7 @@ from agora_token_builder import RtcTokenBuilder
 import random
 import time
 import json
-from .models import RoomMember, Room, RoomRequest
-
-from django.views.decorators.csrf import csrf_exempt
+from .models import RoomMember, Room, RoomRequest, User
 
 from django.urls import reverse_lazy
 from django.contrib.auth.views import LoginView
@@ -20,13 +18,16 @@ from django.contrib.auth import login
 def home(request):
     return render(request, 'base/home.html') 
 
+
 # View for the About Us page (render the 'about.html' template).
 def about(request):
     return render(request, 'base/about.html')
 
+
 # View for the Contact Us page (render the 'contact.html' template).
 def contact(request):
     return render(request, 'base/contact.html')
+
 
 # Custom view for handling user login.
 # Uses a custom template and redirects authenticated users away from the login page.
@@ -63,7 +64,7 @@ class SignUp(FormView):
 
 # View to generate an Agora RTC token for room participation or creation.
 # This view is only accessible to authenticated users.
-@login_required(login_url='/login/')
+@login_required(login_url='/login/')    # Ensure the user is logged in before accessing this view. Redirects to '/login/' if the user is not logged in
 def getToken(request):
     # Agora app credentials (these are placeholder values, should be replaced with actual ones).
     appId = '351d9881f5d3413ba18e08949844fddb'
@@ -108,21 +109,20 @@ def getToken(request):
 
 
 # View to render the lobby page, accessible only by logged-in users.
-@login_required(login_url='/login/')
+@login_required(login_url='/login/')    # Ensure the user is logged in before accessing this view. Redirects to '/login/' if the user is not logged in
 def lobby(request):
     action_type = request.GET.get('actionType', 'join')  # Default action is 'join' if not specified.
     return render(request, 'base/lobby.html', {'action_type': action_type})
 
 
 # View to render the room page, accessible only by logged-in users.
-@login_required(login_url='/login/')
+@login_required(login_url='/login/') # Ensure the user is logged in before accessing this view. Redirects to '/login/' if the user is not logged in
 def room(request):
     return render(request, 'base/room.html')
 
 
-# View to create a new RoomMember entry in the database. Exempt from CSRF protection.
-@csrf_exempt
-@login_required(login_url='/login/')
+# View to create a new RoomMember entry in the database.
+@login_required(login_url='/login/') # Ensure the user is logged in before accessing this view. Redirects to '/login/' if the user is not logged in
 def createMember(request):
     data = json.loads(request.body)  # Parse the JSON data from the request body.
     
@@ -138,7 +138,7 @@ def createMember(request):
 
 
 # View to fetch a RoomMember's information based on UID and room name.
-@login_required(login_url='/login/')
+@login_required(login_url='/login/')    # Ensure the user is logged in before accessing this view. Redirects to '/login/' if the user is not logged in
 def getMember(request):
     uid = request.GET.get('UID')  # Get UID from request query parameters.
     room_name = request.GET.get('room_name')  # Get room name from request query parameters.
@@ -153,12 +153,10 @@ def getMember(request):
     return JsonResponse({'name': member.name}, safe=False)
 
 
-# View to delete a RoomMember entry from the database. Exempt from CSRF protection.
-@csrf_exempt
-@login_required(login_url='/login/')
+# View to delete a RoomMember entry from the database.
+@login_required(login_url='/login/')    # Ensure the user is logged in before accessing this view. Redirects to '/login/' if the user is not logged in
 def deleteMember(request):
     data = json.loads(request.body)  # Parse the request body as JSON.
-    
     try:
         # Find the RoomMember entry based on the user's name, UID, and room name.
         member = RoomMember.objects.get(
@@ -195,11 +193,8 @@ def deleteMember(request):
 
 
 # Endpoint for handling join requests
-def handle_join_request(request, room_name):
-    # Ensure the request method is POST, since only POST requests are allowed here
-    if request.method != "POST":
-        return JsonResponse({"error": "Only POST requests are allowed"}, status=405)
-    
+@login_required(login_url='/login/')  # Ensure the user is logged in before accessing this view. Redirects to '/login/' if the user is not logged in
+def handle_join_request(request, room_name):    
     # Get the room object based on the room_name provided in the URL
     room = get_object_or_404(Room, room_name=room_name)
     user = request.user
@@ -230,6 +225,7 @@ def handle_join_request(request, room_name):
 
 
 # Endpoint to check all pending join requests for a room
+@login_required(login_url='/login/')  # Ensure the user is logged in before accessing this view. Redirects to '/login/' if the user is not logged in
 def check_pending_requests(request, room_name):
     try:
         # Retrieve the room based on its name
@@ -254,6 +250,7 @@ def check_pending_requests(request, room_name):
 
 
 # Endpoint for the host to approve or deny a join request
+@login_required(login_url='/login/')  # Ensure the user is logged in before accessing this view. Redirects to '/login/' if the user is not logged in
 def approve_join_request(request, room_name, request_id):
     try:
         # Fetch the room and the join request based on the room_name and request_id
@@ -291,6 +288,7 @@ def approve_join_request(request, room_name, request_id):
 
 
 # Endpoint to check the status of a user's join request
+@login_required(login_url='/login/')  # Ensure the user is logged in before accessing this view. Redirects to '/login/' if the user is not logged in
 def check_join_request_status(request, room_name, user_id):
     try:
         # Fetch the room and the join request for the user
@@ -331,7 +329,7 @@ def check_join_request_status(request, room_name, user_id):
 
 
 # View to get the list of participants in a room
-@login_required(login_url='/login/')
+@login_required(login_url='/login/')  # Ensure the user is logged in before accessing this view. Redirects to '/login/' if the user is not logged in
 def get_participants(request, room_name):
     try:
         # Fetch the room by its name
@@ -354,3 +352,114 @@ def get_participants(request, room_name):
 
     except Room.DoesNotExist:
         return JsonResponse({"status": "error", "message": "Room not found"}, status=404)
+
+
+# View to fetch a RoomMember's UID based on username and room name.
+@login_required(login_url='/login/')  # Ensure the user is logged in before accessing this view. Redirects to '/login/' if the user is not logged in
+def getUidByUsername(request):
+    # Retrieve the username and room name from the request's query parameters.
+    username = request.GET.get('username')
+    room_name = request.GET.get('room_name')
+
+    try:
+        # Query the RoomMember model to find the member with the specified username and room name.
+        member = RoomMember.objects.get(
+            name=username,
+            room_name=room_name,
+        )
+
+        # If found, return the member's UID in a JSON response.
+        return JsonResponse({'uid': member.uid}, safe=False)
+
+    except RoomMember.DoesNotExist:
+        # If no matching member is found, return a 404 error with an appropriate message.
+        return JsonResponse({'error': 'Member not found'}, status=404)
+
+
+# View to remove a participant from a room using their name and room_name.
+@login_required(login_url='/login/')  # Ensure the user is logged in before accessing this view. Redirects to '/login/' if the user is not logged in
+def remove_participant_by_name(request):
+    # Parse the JSON request body to extract the participant's data.
+    data = json.loads(request.body)
+    
+    try:
+        # Query the RoomMember model to find the participant to be removed using their name, UID, and room name.
+        member = RoomMember.objects.get(
+            name=data['name'],
+            uid=data['UID'],
+            room_name=data['room_name'],
+        )
+
+        # Remove the member from the RoomMember model.
+        member.delete()
+
+        # Query the Room model to find the corresponding room using the room name.
+        room = Room.objects.get(room_name=data['room_name'])
+
+        # Find the participant to remove from the room's participants list by matching their username (case-insensitively).
+        participant_to_remove = room.participants.filter(username__iexact=member.name).first()
+
+        # If the participant exists in the room, remove them.
+        if participant_to_remove:
+            room.participants.remove(participant_to_remove)
+
+        # If the removed participant was the current host, set the room's host to None.
+        if room.current_host == participant_to_remove:
+            room.current_host = None
+            room.save()
+
+        # If the room no longer has any participants, delete the room from the database.
+        if not room.participants.exists():
+            room.delete()
+
+        # Return a success response indicating the participant was removed successfully.
+        return JsonResponse({'message': f'Participant {member.name} has been removed successfully.'}, safe=False)
+
+    except RoomMember.DoesNotExist:
+        # Return a 404 error if the specified member does not exist.
+        return JsonResponse({'error': 'Member not found.'}, status=404)
+
+    except Room.DoesNotExist:
+        # Return a 404 error if the specified room does not exist.
+        return JsonResponse({'error': 'Room not found.'}, status=404)
+
+    except Exception as e:
+        # Catch any unexpected errors and return a 500 response with the error message.
+        return JsonResponse({'error': f'An unexpected error occurred: {str(e)}'}, status=500)
+
+
+# View to change the host of a room.
+@login_required(login_url='/login/')  # Ensure the user is logged in before accessing this view. Redirects to '/login/' if the user is not logged in
+def change_host(request):
+    # Parse the JSON request body to extract the new host's data
+    data = json.loads(request.body)
+
+    try:
+        # Query the Room model to find the room using the room name
+        room = Room.objects.get(room_name=data['room_name'])
+
+        # Query the User model to find the new host by username (case-insensitively)
+        new_host = User.objects.filter(username__iexact=data['name']).first()
+
+        if not new_host:
+            # Return a 404 error if the specified user does not exist
+            return JsonResponse({'error': 'User not found.'}, status=404)
+
+        if new_host not in room.participants.all():
+            # Return a 400 error if the specified user is not a participant of the room
+            return JsonResponse({'error': 'User is not a participant of the room.'}, status=400)
+
+        # Update the room's current host to the new host
+        room.current_host = new_host
+        room.save()
+
+        # Return a success response indicating the host was changed successfully
+        return JsonResponse({'message': f'{new_host.username} is now the host of the room.'}, safe=False)
+
+    except Room.DoesNotExist:
+        # Return a 404 error if the specified room does not exist
+        return JsonResponse({'error': 'Room not found.'}, status=404)
+
+    except Exception as e:
+        # Catch any unexpected errors and return a 500 response with the error message
+        return JsonResponse({'error': f'An unexpected error occurred: {str(e)}'}, status=500)
