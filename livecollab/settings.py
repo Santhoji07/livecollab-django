@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -20,12 +21,39 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-^yycd4l+rk4jdxp+p3nu98^k-8$*74r&eomge^*&kchb^y9hg_'
+
+# Uncomment this line for local development (use a hardcoded key)
+# SECRET_KEY = 'django-insecure-^yycd4l+rk4jdxp+p3nu98^k-8$*74r&eomge^*&kchb^y9hg_'
+
+
+# Comment the below SECRET_KEY when running locally and uncomment it when deploying.
+# The SECRET_KEY is now fetched from environment variables to enhance security, ensuring sensitive data is not stored in the codebase and can vary across environments.
+
+# Uncomment this line for production (fetches from environment variable)
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
+
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
 
-ALLOWED_HOSTS = []
+# Uncomment this line for local development (enables DEBUG mode)
+# DEBUG = True
+
+
+# Comment the below DEBUG = True when deploying to production and uncomment the environment-based DEBUG setting.
+# The DEBUG setting is now controlled via environment variables to ensure the appropriate mode (debug or production) is used depending on the environment.
+
+# Uncomment this line for production (fetches DEBUG from environment variable)
+DEBUG = os.environ.get('DJANGO_DEBUG', 'False') == 'True'
+
+
+# Uncomment this line for local development (allows localhost)
+# ALLOWED_HOSTS = []
+
+# Comment the below ALLOWED_HOSTS = [] when deploying to production and uncomment the environment-based ALLOWED_HOSTS setting.
+# ALLOWED_HOSTS is now dynamically fetched from environment variables to ensure only allowed domains are permitted, enhancing security in production environments.
+
+# Uncomment this line for production (fetches ALLOWED_HOSTS from environment variable)
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '').split(' ')
 
 
 # Application definition
