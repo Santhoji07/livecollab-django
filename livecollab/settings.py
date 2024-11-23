@@ -50,7 +50,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'unityhub.urls'
+ROOT_URLCONF = 'livecollab.urls'
 
 TEMPLATES = [
     {
@@ -68,7 +68,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'unityhub.wsgi.application'
+WSGI_APPLICATION = 'livecollab.wsgi.application'
 
 
 # Database
