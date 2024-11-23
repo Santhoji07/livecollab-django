@@ -30,7 +30,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # The SECRET_KEY is now fetched from environment variables to enhance security, ensuring sensitive data is not stored in the codebase and can vary across environments.
 
 # Uncomment this line for production (fetches from environment variable)
-SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
+SECRET_KEY = os.environ.get('SECRET_KEY')
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
@@ -43,7 +43,7 @@ SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
 # The DEBUG setting is now controlled via environment variables to ensure the appropriate mode (debug or production) is used depending on the environment.
 
 # Uncomment this line for production (fetches DEBUG from environment variable)
-DEBUG = os.environ.get('DJANGO_DEBUG', 'False') == 'True'
+DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
 
 # Uncomment this line for local development (allows localhost)
