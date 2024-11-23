@@ -455,7 +455,7 @@ body::before {
     box-shadow: var(--shaddow);
     background-color: #fff;
     cursor: pointer;
-    padding: 8px 12px;
+    padding: 6px 10px;
     border-radius: 5px;
 }
 
