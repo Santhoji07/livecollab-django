@@ -151,12 +151,6 @@ let toggleMic = async (e) => {
         await localTracks[0].setMuted(true)
         e.target.style.backgroundColor = 'rgb(255, 80, 80, 1)'
     }
-
-    // Re-subscribe to remote users after toggling the microphone.
-    for (let user of client.remoteUsers) {
-        console.log("Re-subscribing to user:", user.uid);
-        await subscribeToRemoteUser(user);
-    }
 }
 
 
