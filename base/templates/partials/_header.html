@@ -9,7 +9,7 @@
         <h1>LiveCollab</h1> <!-- Title of the website, clicking redirects to the home page -->
     </a>
 
-    <nav>
+    <nav class="desktop-nav">
         <!-- Navigation bar with links to other pages -->
         <a href="{% url 'home' %}">Home</a>  <!-- Link to Home page -->
         <a href="{% url 'about' %}">About Us</a>  <!-- Link to About Us page -->
@@ -37,8 +37,40 @@
             <a href="#" onclick="document.getElementById('login-form').submit(); return false;">Login</a>
         </form>
         {% endif %}
-
     </nav>
+
+    <!-- Burger Button (appears on small screens) -->
+    <div class="burger-menu" id="burger-menu" onclick="toggleNav()">
+        <div class="burger-bar"></div>
+        <div class="burger-bar"></div>
+        <div class="burger-bar"></div>
+    </div>
+
+    <!-- Mobile Navigation Menu -->
+    <div class="mobile-nav" id="mobile-nav">
+        <a href="{% url 'home' %}">Home</a>
+        <a href="{% url 'about' %}">About Us</a>
+        <a href="{% url 'contact' %}">Contact</a>
+        
+        {% if user.is_authenticated %}
+        <form id="logout-form" method="POST" action="{% url 'logout' %}" style="display: inline;">
+            {% csrf_token %}
+            <a href="#" onclick="document.getElementById('logout-form').submit(); return false;">Logout</a>
+        </form>
+        {% else %}
+        <form id="login-form" method="POST" action="{% url 'login' %}" style="display: inline;">
+            {% csrf_token %}
+            <a href="#" onclick="document.getElementById('login-form').submit(); return false;">Login</a>
+        </form>
+        {% endif %}
+    </div>
 </header>
+
+<script>
+    function toggleNav() {
+        const mobileNav = document.getElementById('mobile-nav');
+        mobileNav.classList.toggle('open');
+    }
+</script>
 
 {% endif %}

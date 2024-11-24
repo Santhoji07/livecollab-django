@@ -1,13 +1,15 @@
 <!DOCTYPE html>
 {% load static %}
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
+
     <!-- Open Graph Meta Tags for social media sharing -->
-    <meta name="og:title" content="LiveCollab"/>
-    <meta name="og:description" content="LiveCollab - Seamless video collaboration for teams and individuals. Join or host meetings with ease."/>
+    <meta name="og:title" content="LiveCollab" />
+    <meta name="og:description"
+        content="LiveCollab - Seamless video collaboration for teams and individuals. Join or host meetings with ease." />
     <meta name="og:image" content="https://sumithshetty1.github.io/Meta-Open-Graph-Images/livecollab-logo.ico" />
 
     <!-- Page Title -->
@@ -17,7 +19,8 @@
     <link rel='stylesheet' type='text/css' media='screen' href="{% static 'styles/main.css' %}?v={{ STATIC_VERSION }}">
 
     <!-- Link to favicon (LiveCollab logo) -->
-    <link rel="icon" href="https://sumithshetty1.github.io/Meta-Open-Graph-Images/livecollab-logo.ico" type="image/x-icon">
+    <link rel="icon" href="https://sumithshetty1.github.io/Meta-Open-Graph-Images/livecollab-logo.ico"
+        type="image/x-icon">
 
     <style>
         /* General Reset and Global Styles */
@@ -25,21 +28,29 @@
             margin: 0;
             padding: 0;
             font-family: Arial, sans-serif;
-            scroll-behavior: smooth; /* Smooth scroll for anchor links */
+            scroll-behavior: smooth;
+            /* Smooth scroll for anchor links */
         }
 
         /* Banner Section Styling */
         .banner {
-            width: 100vw; /* Full viewport width */
-            height: 100vh; /* Full viewport height */
-            background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url("{% static 'images/bg2.avif' %}"); /* Gradient overlay + background image */
+            width: 100vw;
+            /* Full viewport width */
+            height: 100vh;
+            /* Full viewport height */
+            background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
+            url("{% static 'images/bg2.avif' %}");
+            /* Gradient overlay + background image */
             background-repeat: no-repeat;
             background-position: center;
-            background-size: cover; /* Ensures the background image covers the entire area */
+            background-size: cover;
+            /* Ensures the background image covers the entire area */
             display: flex;
-            align-items: center; /* Vertically center content */
-            justify-content: center; /* Horizontally center content */
-            color: #ffffff; 
+            align-items: center;
+            /* Vertically center content */
+            justify-content: center;
+            /* Horizontally center content */
+            color: #ffffff;
             text-align: center;
             position: relative;
             overflow: hidden;
@@ -56,19 +67,24 @@
             background-image: url("{% static 'images/bg2.avif' %}");
             background-size: cover;
             background-position: center;
-            opacity: 0.2; /* Transparent background image for the overlay */
-            z-index: -1; /* Ensure the overlay is beneath the content */
+            opacity: 0.2;
+            /* Transparent background image for the overlay */
+            z-index: -1;
+            /* Ensure the overlay is beneath the content */
         }
 
         /* Glass Effect Styling */
         .glass {
-            background: rgba(255, 255, 255, 0.1); /* Semi-transparent background */
+            background: rgba(255, 255, 255, 0.1);
+            /* Semi-transparent background */
             border-radius: 15px;
             padding: 40px;
             max-width: 600px;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-            backdrop-filter: blur(8px); /* Blurring the background behind the glass */
-            animation: fadeIn 1.5s ease; /* Animation to fade in */
+            backdrop-filter: blur(8px);
+            /* Blurring the background behind the glass */
+            animation: fadeIn 1.5s ease;
+            /* Animation to fade in */
             box-sizing: border-box;
         }
 
@@ -76,7 +92,8 @@
         .glass h1 {
             font-size: 50px;
             margin-bottom: 20px;
-            animation: slideIn 1s ease; /* Slide-in animation for the heading */
+            animation: slideIn 1s ease;
+            /* Slide-in animation for the heading */
             font-weight: 700;
         }
 
@@ -85,7 +102,8 @@
             font-size: 18px;
             line-height: 1.6;
             margin-bottom: 20px;
-            animation: fadeInText 2s ease; /* Fade-in animation for text */
+            animation: fadeInText 2s ease;
+            /* Fade-in animation for text */
             font-weight: 500;
         }
 
@@ -99,7 +117,8 @@
             border-radius: 25px;
             margin: 10px;
             cursor: pointer;
-            transition: all 0.4s ease; /* Smooth transition for hover effect */
+            transition: all 0.4s ease;
+            /* Smooth transition for hover effect */
             box-shadow: 0 4px 12px rgba(0, 10, 20, 0.2);
             position: relative;
             overflow: hidden;
@@ -119,11 +138,13 @@
         }
 
         button:hover::before {
-            left: 0; /* Reveal animation */
+            left: 0;
+            /* Reveal animation */
         }
 
         button:hover {
-            transform: scale(1.05); /* Slight zoom effect on hover */
+            transform: scale(1.05);
+            /* Slight zoom effect on hover */
         }
 
         /* Header Styling (Fixed Position) */
@@ -135,7 +156,8 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background-color: rgba(0, 66, 130, 0.8); /* Semi-transparent header background */
+            background-color: rgba(0, 66, 130, 0.8);
+            /* Semi-transparent header background */
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             z-index: 10;
             box-sizing: border-box;
@@ -162,20 +184,98 @@
             color: #b3d1ff;
         }
 
+        /* Burger Menu (only visible on small screens) */
+        .burger-menu {
+            display: none;
+            flex-direction: column;
+            cursor: pointer;
+        }
+
+        .burger-bar {
+            width: 30px;
+            height: 5px;
+            margin: 3px 0;
+            background-color: #ffffff;
+            border-radius: 5px;
+        }
+
+        /* Mobile Navigation Menu */
+        .mobile-nav {
+            display: none;
+            position: absolute;
+            top: 60px;
+            left: 0;
+            right: 0;
+            background-color: rgba(0, 66, 130, 0.9);
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            flex-direction: column;
+            align-items: center;
+            z-index: 10;
+        }
+
+        .mobile-nav a {
+            margin: 10px 0;
+            font-size: 20px;
+            color: #ffffff;
+            font-weight: bold;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .mobile-nav a:hover {
+            color: #b3d1ff;
+        }
+
+        /* Media Query for Small Screens */
+        @media (max-width: 573px) {
+            nav.desktop-nav {
+                display: none;
+                /* Hide the desktop nav */
+            }
+
+            .burger-menu {
+                display: flex;
+                /* Show the burger menu */
+            }
+
+            .mobile-nav.open {
+                display: flex;
+                /* Show mobile nav when it's toggled */
+            }
+        }
+
         /* Keyframe Animations */
         @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
         }
 
         @keyframes slideIn {
-            from { transform: translateY(-20px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
         }
 
         @keyframes fadeInText {
-            from { opacity: 0; }
-            to { opacity: 1; }
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
         }
 
         /* Additional Sections */
@@ -199,6 +299,7 @@
         }
     </style>
 </head>
+
 <body>
     <!-- Include header content from partial template -->
     {% include 'partials/_header.html' %}
@@ -208,4 +309,5 @@
 
     {% endblock content %}
 </body>
+
 </html>
