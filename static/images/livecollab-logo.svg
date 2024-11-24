@@ -1,7 +1,0 @@
-<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
-  <!-- Background rectangle -->
-  <rect x="0" y="0" width="80" height="80" rx="8" fill="#0066cc"/>
-  
-  <!-- Camera icon - fully centered -->
-  <path d="M15 20 h40 v20 h10 l10 -10 v20 l-10 -10 h-10 v20 h-40 z" fill="white"/>
-</svg>
