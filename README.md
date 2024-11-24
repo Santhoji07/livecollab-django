@@ -187,3 +187,136 @@ To start the Django server, navigate to your project directory and run the follo
 ```bash
 python manage.py runserver
 ```
+
+## Django Project Configuration Guide
+
+This guide explains the configuration differences between local development and deployment environments for your Django project.
+
+## Local Development Configuration
+
+### Settings Configuration
+In your `settings.py` file, use these settings for local development:
+
+```python
+# settings.py
+
+SECRET_KEY = 'django-insecure-^yycd4l+rk4jdxp+p3nu98^k-8$*74r&eomge^*&kchb^y9hg_'
+
+DEBUG = True
+
+ALLOWED_HOSTS = []
+
+# Static Files Configuration
+STATIC_URL = '/static/'
+
+STATICFILES_DIRS = [
+    BASE_DIR / 'static'
+]
+```
+
+This configuration:
+- Uses a hard-coded SECRET_KEY (only for development)
+- Enables debug mode for detailed error pages
+- Allows access from localhost only
+- Sets up basic static file handling
+
+## Deployment Configuration
+
+### Required Packages
+First, install the necessary packages:
+```bash
+pip install gunicorn  # Production-grade WSGI server
+
+pip install whitenoise  # Static file serving
+
+pip freeze > requirements.txt  # Save dependencies
+```
+
+### Settings Configuration
+Update your `settings.py` for deployment:
+
+```python
+# settings.py
+
+import os
+
+# Security Settings
+SECRET_KEY = os.environ.get('SECRET_KEY')  # Get from environment variable
+
+DEBUG = os.environ.get('DEBUG', 'False') == 'True'  # Default to False
+
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '').split(' ')
+
+# Middleware Configuration
+MIDDLEWARE = [
+    'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # Add WhiteNoise
+    # ... other middleware ...
+]
+
+# Static Files Configuration
+STATIC_URL = '/static/'
+
+STATICFILES_DIRS = [
+    BASE_DIR / 'static'
+]
+
+# Production Static Files Settings
+if not DEBUG:
+    STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+```
+
+This configuration:
+- Retrieves sensitive settings from environment variables
+- Disables debug mode by default
+- Configures allowed hosts from environment variables
+- Sets up WhiteNoise for efficient static file serving
+- Configures static file compression and long-term caching
+
+### Environment Variables
+Make sure to set these environment variables on your deployment server:
+```bash
+SECRET_KEY=your-secure-secret-key
+
+DEBUG=False
+
+ALLOWED_HOSTS=yourdomain.com subdomain.yourdomain.com
+```
+
+### Deployment Checklist
+Before deploying:
+1. Generate a new secure SECRET_KEY
+2. Set DEBUG to False
+3. Configure ALLOWED_HOSTS properly
+4. Run `python manage.py collectstatic`
+5. Ensure all requirements are in requirements.txt
+6. Configure your web server (e.g., Gunicorn) properly
+
+### Static Files in Production
+The production setup:
+- Uses WhiteNoise to serve static files efficiently
+- Compresses static files automatically
+- Adds unique hashes to filenames for cache busting
+- Creates a 'staticfiles' directory when DEBUG is False
+
+
+## Common Issues and Solutions
+
+### Static Files Not Loading
+If static files aren't loading in production:
+1. Verify STATIC_ROOT is set correctly
+2. Ensure you've run `python manage.py collectstatic`
+3. Check that WhiteNoise middleware is in the correct order
+4. Verify your web server configuration
+
+### Environment Variables
+If environment variables aren't working:
+1. Double-check your environment variable syntax
+2. Verify they're properly set in your deployment platform
+3. Restart your application server after changing environment variables
+
+## References
+- [Django Deployment Checklist](https://docs.djangoproject.com/en/stable/howto/deployment/checklist/)
+- [WhiteNoise Documentation](http://whitenoise.evans.io/en/stable/)
+- [Gunicorn Documentation](https://docs.gunicorn.org/en/stable/configure.html)
