@@ -55,8 +55,18 @@ let joinAndDisplayLocalStream = async () => {
 };
 
 
+let isProcessing = false;  // Flag to track if the subscription process is already running
+
+
 // Function to subscribe to a remote user's media (audio and video).
 let subscribeToRemoteUser = async (user) => {
+    if (isProcessing) {
+        console.log("Subscription process is already running, skipping...");
+        return;  // Exit if the process is already running
+    }
+
+    isProcessing = true;  // Set the flag to indicate that the process is running
+
     try {
         // Subscribe to the user's video and audio streams.
         await client.subscribe(user, 'video').catch(console.error);
@@ -84,6 +94,8 @@ let subscribeToRemoteUser = async (user) => {
     } catch (error) {
         console.error("Error subscribing to user:", user.uid, error);
     }
+
+    isProcessing = false;  // Reset the flag after the process is complete
 };
 
 
