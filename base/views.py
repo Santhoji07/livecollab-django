@@ -78,7 +78,16 @@ def getToken(request):
     if action_type == 'host':
         existing_room = Room.objects.filter(room_name=channelName).first()
         if existing_room:
-            return JsonResponse({'error': 'Room already exists'}, status=400)  # Return error if the room exists.
+            # Check if there are any members in the RoomMember model for the same room.
+            has_members_in_roommember = RoomMember.objects.filter(room_name=channelName).exists()
+        
+            # If no members, delete the room.
+            if not has_members_in_roommember:
+                existing_room.delete()
+            else:
+                # If members exist, return an error message.
+                return JsonResponse({'error': 'Room already exists and has active members'}, status=400)
+
 
     # If the user is joining, ensure the room exists.
     elif action_type == 'join':
