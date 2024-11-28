@@ -86,7 +86,7 @@ def getToken(request):
                 existing_room.delete()
             else:
                 # If members exist, return an error message.
-                return JsonResponse({'error': 'Room already exists and has active members'}, status=400)
+                return JsonResponse({'error': 'Room already exists'}, status=400)
 
 
     # If the user is joining, ensure the room exists.
