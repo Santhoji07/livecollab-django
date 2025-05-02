@@ -17,6 +17,7 @@
 - **Frontend**: HTML, CSS, JavaScript
 - **Real-Time Communication**: Agora Real-Time Voice and Video Engagement SDK
 - **Database**: SQLite
+- **Deployment**: Render
 
 This project demonstrates the integration of modern web technologies with real-time communication solutions, offering a flexible and reliable platform for video engagement.
 
