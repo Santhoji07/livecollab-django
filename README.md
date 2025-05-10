@@ -116,8 +116,12 @@ The `startproject` template installs some Django apps by default, such as admin,
 python manage.py migrate
 ```
 
-## Django Admin
-### Superuser:
+## Django Admin (Development Only)
+
+⚠️ **WARNING**: 
+- The credentials below will only work when using the SQLite database included in this repository.
+
+### Superuser Access (Dev Only):
 ```bash
 Username: admin  
 Password: admin123
