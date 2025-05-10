@@ -16,7 +16,7 @@
 - **Backend**: Django (Python)
 - **Frontend**: HTML, CSS, JavaScript
 - **Real-Time Communication**: Agora Real-Time Voice and Video Engagement SDK
-- **Database**: SQLite
+- **Database**: PostgreSQL (production), SQLite (fallback)
 - **Deployment**: Render
 
 This project demonstrates the integration of modern web technologies with real-time communication solutions, offering a flexible and reliable platform for video engagement.
