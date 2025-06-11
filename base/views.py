@@ -13,6 +13,13 @@ from django.views.generic.edit import FormView
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import login
 
+import os
+from dotenv import load_dotenv
+
+
+# Load environment variables from .env file
+load_dotenv()
+
 
 # View for the homepage (render the 'home.html' template).
 def home(request):
@@ -66,9 +73,9 @@ class SignUp(FormView):
 # This view is only accessible to authenticated users.
 @login_required(login_url='/login/')    # Ensure the user is logged in before accessing this view. Redirects to '/login/' if the user is not logged in
 def getToken(request):
-    # Agora app credentials (these are placeholder values, should be replaced with actual ones).
-    appId = '351d9881f5d3413ba18e08949844fddb'
-    appCertificate = '8061ce92be7f4e8caea5650c67ddc7ce'
+    # Agora app credentials
+    appId = os.environ.get('AGORA_APP_ID')
+    appCertificate = os.environ.get('AGORA_APP_CERTIFICATE')
     
     # Get the channel name (room) and action type (host/join) from the request.
     channelName = request.GET.get('channel')
