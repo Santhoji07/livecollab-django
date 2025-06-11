@@ -8,7 +8,6 @@
 - **Real-Time Video & Voice**: High-quality, low-latency video and voice communication powered by Agora's SDK.
 - **User-Friendly Interface**: Intuitive and responsive UI for seamless navigation and usage.
 - **Secure & Private**: Ensures user data privacy and secure video sessions.
-- **Scalable Architecture**: Built using Django for robust, scalable performance.
 - **Cross-Platform**: Accessible on both desktop and mobile devices.
 - **Group Video Chat**: Support for multi-user video calls.
 
