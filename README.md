@@ -324,3 +324,6 @@ If environment variables aren't working:
 - [Django Deployment Checklist](https://docs.djangoproject.com/en/stable/howto/deployment/checklist/)
 - [WhiteNoise Documentation](http://whitenoise.evans.io/en/stable/)
 - [Gunicorn Documentation](https://docs.gunicorn.org/en/stable/configure.html)
+
+## Disclaimer
+This project is a personal/portfolio project created for educational and demonstration purposes. It is not affiliated with or endorsed by any existing company or product that may share a similar name.
